@@ -13,7 +13,7 @@
         * { box-sizing: border-box; }
         body { 
             margin: 0; padding: 0; 
-            background-color: #0b0f19; /* 깔끔한 단색 관제실 톤 복원 */
+            background-color: #0b0f19; 
             color: #f8fafc; 
             font-family: 'Malgun Gothic', sans-serif; 
             height: 100vh; overflow: hidden;
@@ -21,10 +21,10 @@
         
         /* 상단 상태 바 */
         #status-board {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
             color: #fff; font-size: 15px; font-weight: bold; text-align: center;
             background-color: #15803d; padding: 8px 18px;
-            border-radius: 8px; width: 70%; max-width: 350px;
+            border-radius: 8px; width: 65%; max-width: 380px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
             border: 1px solid rgba(255,255,255,0.15);
             letter-spacing: 1px;
@@ -37,31 +37,28 @@
 
         /* DB 초기화 버튼 */
         #btn-clear-data {
-            position: fixed; top: 15px; left: 15px; padding: 6px 10px;
+            position: fixed; top: 12px; left: 15px; padding: 6px 10px;
             background-color: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b;
             border-radius: 6px; font-size: 11px; cursor: pointer; z-index: 100; font-weight: bold;
         }
         #btn-clear-data:hover { background-color: #991b1b; color: #fff; }
 
-        /* ✨ 우측 상단 소방청 심볼 및 타이틀 영역 ✨ */
+        /* 우측 상단 브랜딩 영역 */
         #header-branding {
-            position: fixed; top: 12px; right: 20px;
-            display: flex; align-items: center; gap: 10px; z-index: 100;
-            background: #111827; padding: 5px 12px; border-radius: 8px;
+            position: fixed; top: 12px; right: 15px;
+            display: flex; align-items: center; gap: 8px; z-index: 100;
+            background: #111827; padding: 4px 10px; border-radius: 8px;
             border: 1px solid #374155; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
-        #header-branding img {
-            width: 30px; height: 30px; object-fit: contain;
-        }
-        #header-branding span {
-            color: #f8fafc; font-size: 14px; font-weight: bold; letter-spacing: 0.5px;
-        }
+        #header-branding img { width: 26px; height: 26px; object-fit: contain; }
+        #header-branding span { color: #f8fafc; font-size: 13px; font-weight: bold; }
 
         /* 메인 컨테이너 (PC: 3분할 가로 배치) */
         #main-container {
-            position: absolute; top: 65px; bottom: 175px; left: 15px; right: 15px;
+            position: absolute; top: 60px; bottom: 175px; left: 15px; right: 15px;
             display: flex; gap: 12px; z-index: 10;
             max-width: 1600px; margin: 0 auto;
+            transition: bottom 0.3s ease; /* 하단 패널 접힐 때 연동 */
         }
 
         .panel-box {
@@ -76,10 +73,9 @@
             letter-spacing: 1px;
         }
 
-        /* 1. 좌측: 현장 정보 요약 패널 (에메랄드 톤) */
+        /* 1. 좌측: 현장 정보 요약 패널 */
         #overview-panel { border: 1px solid #0d9488; }
         #overview-panel .panel-header { background-color: #115e59; border-bottom: 1px solid #0d9488; }
-        
         .overview-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; }
         .ov-section-title { font-size: 12px; font-weight: bold; color: #5eead4; margin: 8px 0 4px 0; border-bottom: 1px dashed #134e4a; padding-bottom: 2px; }
         .ov-section-title:first-child { margin-top: 0; }
@@ -99,10 +95,9 @@
         .weather-input { background: transparent; border: none; color: #2dd4bf; text-align: center; width: 100%; font-size: 11px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; }
         .weather-input:focus { outline: none; background: rgba(255,255,255,0.1); }
 
-        /* 2. 가운데: 타임라인 패널 (레드 톤) */
+        /* 2. 가운데: 타임라인 패널 */
         #log-panel { border: 1px solid #dc2626; }
         #log-panel .panel-header { background-color: #991b1b; border-bottom: 1px solid #dc2626; }
-        
         .log-scroll-area { flex: 1; overflow-y: auto; padding: 10px; }
         .log-entry { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; border-bottom: 1px dashed #1f2937; padding-bottom: 5px; font-size: 12px; }
         .log-content { flex: 1; word-break: break-all; }
@@ -112,7 +107,7 @@
         .btn-delete-log { background: transparent; color: #f87171; border: 1px solid #7f1d1d; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 4px; margin-left: 6px; white-space: nowrap; }
         .btn-delete-log:hover { background: #991b1b; color: white; }
 
-        /* 3. 우측: 현장 도착 현황 패널 (블루 톤) */
+        /* 3. 우측: 현장 도착 현황 패널 */
         #arrived-vehicles-panel { border: 1px solid #1d4ed8; }
         .avp-header { 
             background-color: #1e40af; color: white; padding: 10px; 
@@ -121,71 +116,84 @@
             border-bottom: 1px solid #1d4ed8;
         }
         .avp-header-right { display: flex; align-items: center; gap: 8px; }
-        
         #total-veh-badge {
             background-color: rgba(0,0,0,0.3); color: #fbbf24; padding: 3px 8px;
             border-radius: 12px; font-size: 12px; font-weight: bold; border: 1px solid rgba(251,191,36,0.3);
         }
-
         #btn-top-add-veh {
             background-color: #0284c7; color: white; border: none; border-radius: 4px;
             padding: 3px 8px; font-size: 11px; font-weight: bold; cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s;
         }
         #btn-top-add-veh:hover { background-color: #0369a1; }
-        
         .avp-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; display: flex; flex-direction: column; }
         .avp-list-scroll { flex: 1; overflow-y: auto; }
         .avp-category { font-weight: bold; color: #fbbf24; margin-top: 6px; border-bottom: 1px dashed #374155; padding-bottom: 2px; font-size: 12px; }
         .avp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; margin-bottom: 8px; }
-        
         .avp-item { 
             background-color: #1e293b; border: 1px solid #334155; border-radius: 4px; 
             padding: 5px 2px; text-align: center; color: #38bdf8; font-size: 11px; font-weight: bold; 
             cursor: pointer; transition: all 0.15s; position: relative;
         }
-        .avp-item:hover { 
-            background-color: #7f1d1d; border-color: #ef4444; color: #fff; 
-            filter: brightness(1.1);
-        }
-        .avp-item:hover::after {
-            content: " ×"; font-size: 12px; font-weight: bold; color: #fca5a5;
-        }
+        .avp-item:hover { background-color: #7f1d1d; border-color: #ef4444; color: #fff; }
+        .avp-item:hover::after { content: " ×"; font-size: 12px; font-weight: bold; color: #fca5a5; }
 
         /* 스크롤바 디자인 */
         .panel-box::-webkit-scrollbar, .overview-content::-webkit-scrollbar, .log-scroll-area::-webkit-scrollbar, .avp-content::-webkit-scrollbar, .avp-list-scroll::-webkit-scrollbar { width: 5px; }
-        .panel-box::-webkit-scrollbar-thumb, .overview-content::-webkit-scrollbar-thumb, .log-scroll-area::-webkit-scrollbar-thumb, .avp-content::-webkit-scrollbar-thumb, .avp-list-scroll::-webkit-scrollbar-thumb { background-color: #374155; border-radius: 3px; }
+        .panel-box::-webkit-scrollbar-thumb, .overview-content::-webkit-scrollbar-thumb, .log-scroll-area::-webkit-scrollbar-thumb, .avp-content::-webkit-scrollbar-thumb, .avp-list-scrollbar::-webkit-scrollbar-thumb { background-color: #374155; border-radius: 3px; }
 
-        /* 모바일(스마트폰) 전용 배치 및 헤더 숨김 처리 (화면 좁을 때 겹침 방지) */
+        /* ✨ 스마트폰 전용 레이아웃 및 순서 재배치 ✨ */
         @media screen and (max-width: 900px) {
             #main-container {
                 flex-direction: column;
-                top: 55px;
+                top: 52px;
                 bottom: 175px;
                 left: 10px; right: 10px;
                 gap: 8px;
             }
             .panel-box {
                 flex: none;
-                height: 31vh;
+                height: 42vh; /* 모바일에서 충분히 스크롤해서 볼 수 있는 높이 */
             }
+            /* 순서: 1위 타임라인, 2위 현장도착현황, 3위 현장정보요약 */
             #log-panel { order: 1; }
             #arrived-vehicles-panel { order: 2; }
             #overview-panel { order: 3; }
-            /* 모바일 화면에서는 상단 로고를 숨겨 공간 확보 */
-            #header-branding { display: none; }
-            #status-board { width: 85%; }
+            
+            #header-branding { display: none; } /* 모바일 상단 로고 숨김으로 여백 확보 */
+            #status-board { width: 75%; font-size: 13px; padding: 6px 10px; top: 10px; }
+            #btn-clear-data { top: 10px; padding: 5px 8px; font-size: 10px; }
         }
 
-        /* 하단 제어 패널 */
+        /* 하단 제어 패널 (토글 버튼 기능 포함) */
         #input-panel {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 165px;
-            background: #111827; padding: 10px; box-sizing: border-box;
-            border-top: 1px solid #1f2937; z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+            background: #111827; padding: 8px 10px 10px 10px; box-sizing: border-box;
+            border-top: 1px solid #374155; z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 6px;
             box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+            transition: height 0.3s ease, transform 0.3s ease;
         }
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 850px; margin: 0 auto; }
-        .btn-quick { padding: 9px 2px; font-size: 12px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; word-break: keep-all; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* 하단 패널 접혔을 때의 스타일 */
+        #input-panel.minimized {
+            height: 45px;
+            justify-content: flex-start;
+        }
+        #input-panel.minimized .quick-actions { display: none; }
+
+        /* 패널 접기/펼치기 토글 버튼 바 */
+        .panel-toggle-bar {
+            display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 850px; margin: 0 auto;
+        }
+        .panel-toggle-title { font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 0.5px; }
+        #btn-toggle-panel {
+            background: #374155; color: #f8fafc; border: none; border-radius: 4px;
+            padding: 2px 10px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        #btn-toggle-panel:hover { background: #4b5563; }
+
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; max-width: 850px; margin: 0 auto; }
+        .btn-quick { padding: 8px 2px; font-size: 11px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; word-break: keep-all; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-quick:active { filter: brightness(0.85); }
         
         #btn-receipt { background-color: #0369a1; }       
@@ -197,10 +205,10 @@
         #btn-chojin { background-color: #d97706; }        
         #btn-wanjin { background-color: #16a34a; }        
 
-        .input-row { display: flex; gap: 8px; width: 100%; max-width: 850px; margin: 0 auto; }
-        input[type="text"] { flex-grow: 1; padding: 9px 12px; font-size: 13px; border: 1px solid #374155; border-radius: 6px; background: #1f2937; color: #fff; }
+        .input-row { display: flex; gap: 6px; width: 100%; max-width: 850px; margin: 0 auto; }
+        input[type="text"] { flex-grow: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #374155; border-radius: 6px; background: #1f2937; color: #fff; }
         input[type="text"]:focus { outline: none; border-color: #38bdf8; }
-        .btn-send { padding: 9px 18px; font-size: 13px; font-weight: bold; background: #475569; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-send { padding: 8px 16px; font-size: 12px; font-weight: bold; background: #475569; color: white; border: none; border-radius: 6px; cursor: pointer; }
         .btn-send:hover { background: #526075; }
 
         /* 차량 다중 선택 모달창 */
@@ -232,9 +240,8 @@
     <button id="btn-clear-data">🔥 초기화</button>
     <div id="status-board">지휘차 대기중</div>
     
-    <!-- ✨ 우측 상단 소방청 심볼 및 기관명 브랜딩 영역 ✨ -->
+    <!-- 우측 상단 소방청 심볼 및 기관명 브랜딩 영역 -->
     <div id="header-branding">
-        <!-- 폴더 내 심볼 이미지 파일명(예: symbol.png)에 맞춰 src를 수정해 주세요 -->
         <img src="symbol.png" alt="소방청 심볼" onerror="this.style.display='none'">
         <span>제주소방서 현장대응단</span>
     </div>
@@ -303,8 +310,12 @@
         </div>
     </div>
 
-    <!-- 하단 제어 패널 -->
+    <!-- 하단 제어 패널 (접기/펼치기 기능 추가) -->
     <div id="input-panel">
+        <div class="panel-toggle-bar">
+            <span class="panel-toggle-title">⚡ 빠른 지휘 제어 패널</span>
+            <button id="btn-toggle-panel">▲ 패널 접기</button>
+        </div>
         <div class="quick-actions">
             <button class="btn-quick" id="btn-receipt">신고 접수</button>
             <button class="btn-quick" id="btn-dispatch">출동 지령</button>
@@ -363,6 +374,22 @@
         
         let logsData = []; 
         let arrivedVehicles = [];
+
+        // --- 📌 하단 패널 접기/펼치기 토글 기능 ---
+        const toggleBtn = document.getElementById('btn-toggle-panel');
+        const inputPanel = document.getElementById('input-panel');
+        const mainContainer = document.getElementById('main-container');
+
+        toggleBtn.addEventListener('click', () => {
+            inputPanel.classList.toggle('minimized');
+            if (inputPanel.classList.contains('minimized')) {
+                toggleBtn.innerText = "▼ 패널 펼치기";
+                mainContainer.style.bottom = "55px";
+            } else {
+                toggleBtn.innerText = "▲ 패널 접기";
+                mainContainer.style.bottom = "175px";
+            }
+        });
 
         const overviewFields = ['ov-time', 'ov-place', 'ov-struct', 'ov-owner', 'ov-cause', 'ov-casualty', 'ov-property', 'ov-manpower', 'ov-equipment', 'wx-temp', 'wx-humidity', 'wx-condition', 'wx-wind'];
         

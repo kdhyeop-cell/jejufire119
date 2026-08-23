@@ -135,7 +135,7 @@
         }
         .btn-delete-log:hover { background: #991b1b; color: white; }
 
-        /* 3. 우측: 현장 도착 현황 패널 (헤더 타이틀 중앙 정렬 통일) */
+        /* 3. 우측: 현장 도착 현황 패널 */
         #arrived-vehicles-panel { border: 1px solid #1d4ed8; }
         .avp-header { 
             position: relative;
@@ -415,7 +415,7 @@
             <div class="log-scroll-area" id="log-container"></div>
         </div>
 
-        <!-- 3. 우측 패널: 현장 도착 현황 (헤더 타이틀 완벽 중앙 정렬) -->
+        <!-- 3. 우측 패널: 현장 도착 현황 -->
         <div class="panel-box" id="arrived-vehicles-panel">
             <div class="avp-header">
                 <span>🚒 현장 도착 현황</span>
@@ -802,10 +802,21 @@
             addLog("완전 진화 및 상황 종료", "#4ade80");
         });
 
+        // 🔒 관리자 비밀번호(0426) 인증 초기화 로직
+        const ADMIN_PIN = "0426"; 
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             if (isLocked) return;
-            if(confirm("모든 현장 기록 및 요약 정보를 초기화하시겠습니까?")) {
-                logsRef.remove(); statusRef.remove(); arrivedRef.remove(); overviewRef.remove();
+            const inputPin = prompt("⚠️ 모든 현장 기록과 차량 현황이 영구 삭제됩니다.\n초기화 비밀번호(4자리)를 입력하세요:");
+            
+            if (inputPin === null) return; 
+            
+            if (inputPin === ADMIN_PIN) {
+                if(confirm("정말로 모든 현장 기록 및 요약 정보를 초기화하시겠습니까?")) {
+                    logsRef.remove(); statusRef.remove(); arrivedRef.remove(); overviewRef.remove();
+                    alert("✅ 성공적으로 초기화되었습니다.");
+                }
+            } else {
+                alert("❌ 비밀번호가 일치하지 않습니다. (초기화 취소)");
             }
         });
     </script>

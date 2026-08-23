@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>제주소방서 현장대응단 - 실시간 지휘 상황판</title>
+    
+    <!-- 파이어베이스 라이브러리 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #0b0f19; /* 깔끔한 단색 관제실 톤 복원 */
+            color: #f8fafc; 
+            font-family: 'Malgun Gothic', sans-serif; 
+            height: 100vh; overflow: hidden;
+        }
+        
+        /* 상단 상태 바 */
+        #status-board {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            color: #fff; font-size: 15px; font-weight: bold; text-align: center;
+            background-color: #15803d; padding: 8px 18px;
+            border-radius: 8px; width: 70%; max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
+            border: 1px solid rgba(255,255,255,0.15);
+            letter-spacing: 1px;
+        }
+        #status-board.alert-level-1 { 
+            background-color: #b91c1c; 
+            animation: blink 1s infinite; 
+        }
+        @keyframes blink { 50% { opacity: 0.8; box-shadow: 0 0 20px #ef4444; } }
+
+        /* DB 초기화 버튼 */
+        #btn-clear-data {
+            position: fixed; top: 15px; left: 15px; padding: 6px 10px;
+            background-color: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b;
+            border-radius: 6px; font-size: 11px; cursor: pointer; z-index: 100; font-weight: bold;
+        }
+        #btn-clear-data:hover { background-color: #991b1b; color: #fff; }
+
+        /* ✨ 우측 상단 소방청 심볼 및 타이틀 영역 ✨ */
+        #header-branding {
+            position: fixed; top: 12px; right: 20px;
+            display: flex; align-items: center; gap: 10px; z-index: 100;
+            background: #111827; padding: 5px 12px; border-radius: 8px;
+            border: 1px solid #374155; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        #header-branding img {
+            width: 30px; height: 30px; object-fit: contain;
+        }
+        #header-branding span {
+            color: #f8fafc; font-size: 14px; font-weight: bold; letter-spacing: 0.5px;
+        }
+
+        /* 메인 컨테이너 (PC: 3분할 가로 배치) */
+        #main-container {
+            position: absolute; top: 65px; bottom: 175px; left: 15px; right: 15px;
+            display: flex; gap: 12px; z-index: 10;
+            max-width: 1600px; margin: 0 auto;
+        }
+
+        .panel-box {
+            flex: 1; 
+            background-color: #111827; border-radius: 8px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+        }
+
+        .panel-header {
+            padding: 10px; text-align: center; color: #fff; font-size: 14px; font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* 1. 좌측: 현장 정보 요약 패널 (에메랄드 톤) */
+        #overview-panel { border: 1px solid #0d9488; }
+        #overview-panel .panel-header { background-color: #115e59; border-bottom: 1px solid #0d9488; }
+        
+        .overview-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; }
+        .ov-section-title { font-size: 12px; font-weight: bold; color: #5eead4; margin: 8px 0 4px 0; border-bottom: 1px dashed #134e4a; padding-bottom: 2px; }
+        .ov-section-title:first-child { margin-top: 0; }
+        .ov-row { display: flex; align-items: stretch; margin-bottom: 5px; gap: 6px; }
+        .ov-label { width: 65px; color: #94a3b8; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; }
+        .ov-input { 
+            flex: 1; background: #1e293b; border: 1px solid #334155; color: #fff; 
+            padding: 5px 8px; border-radius: 4px; font-size: 12px; 
+            resize: vertical; min-height: 26px; max-height: 70px;
+            font-family: 'Malgun Gothic', sans-serif; line-height: 1.3;
+        }
+        .ov-input:focus { outline: none; border-color: #2dd4bf; }
+
+        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; }
+        .weather-box { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 4px 2px; text-align: center; }
+        .weather-title { font-size: 10px; color: #94a3b8; margin-bottom: 2px; }
+        .weather-input { background: transparent; border: none; color: #2dd4bf; text-align: center; width: 100%; font-size: 11px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; }
+        .weather-input:focus { outline: none; background: rgba(255,255,255,0.1); }
+
+        /* 2. 가운데: 타임라인 패널 (레드 톤) */
+        #log-panel { border: 1px solid #dc2626; }
+        #log-panel .panel-header { background-color: #991b1b; border-bottom: 1px solid #dc2626; }
+        
+        .log-scroll-area { flex: 1; overflow-y: auto; padding: 10px; }
+        .log-entry { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; border-bottom: 1px dashed #1f2937; padding-bottom: 5px; font-size: 12px; }
+        .log-content { flex: 1; word-break: break-all; }
+        .log-time { color: #fca5a5; font-weight: bold; margin-right: 4px; font-size: 11px; }
+        .edit-time { cursor: text; border-bottom: 1px dotted #fca5a5; display: inline-block; min-width: 50px; text-align: center; }
+        .edit-time:focus { background-color: rgba(255, 255, 255, 0.1); outline: none; border-radius: 3px; }
+        .btn-delete-log { background: transparent; color: #f87171; border: 1px solid #7f1d1d; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 4px; margin-left: 6px; white-space: nowrap; }
+        .btn-delete-log:hover { background: #991b1b; color: white; }
+
+        /* 3. 우측: 현장 도착 현황 패널 (블루 톤) */
+        #arrived-vehicles-panel { border: 1px solid #1d4ed8; }
+        .avp-header { 
+            background-color: #1e40af; color: white; padding: 10px; 
+            font-weight: bold; font-size: 14px; letter-spacing: 1px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid #1d4ed8;
+        }
+        .avp-header-right { display: flex; align-items: center; gap: 8px; }
+        
+        #total-veh-badge {
+            background-color: rgba(0,0,0,0.3); color: #fbbf24; padding: 3px 8px;
+            border-radius: 12px; font-size: 12px; font-weight: bold; border: 1px solid rgba(251,191,36,0.3);
+        }
+
+        #btn-top-add-veh {
+            background-color: #0284c7; color: white; border: none; border-radius: 4px;
+            padding: 3px 8px; font-size: 11px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s;
+        }
+        #btn-top-add-veh:hover { background-color: #0369a1; }
+        
+        .avp-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; display: flex; flex-direction: column; }
+        .avp-list-scroll { flex: 1; overflow-y: auto; }
+        .avp-category { font-weight: bold; color: #fbbf24; margin-top: 6px; border-bottom: 1px dashed #374155; padding-bottom: 2px; font-size: 12px; }
+        .avp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; margin-bottom: 8px; }
+        
+        .avp-item { 
+            background-color: #1e293b; border: 1px solid #334155; border-radius: 4px; 
+            padding: 5px 2px; text-align: center; color: #38bdf8; font-size: 11px; font-weight: bold; 
+            cursor: pointer; transition: all 0.15s; position: relative;
+        }
+        .avp-item:hover { 
+            background-color: #7f1d1d; border-color: #ef4444; color: #fff; 
+            filter: brightness(1.1);
+        }
+        .avp-item:hover::after {
+            content: " ×"; font-size: 12px; font-weight: bold; color: #fca5a5;
+        }
+
+        /* 스크롤바 디자인 */
+        .panel-box::-webkit-scrollbar, .overview-content::-webkit-scrollbar, .log-scroll-area::-webkit-scrollbar, .avp-content::-webkit-scrollbar, .avp-list-scroll::-webkit-scrollbar { width: 5px; }
+        .panel-box::-webkit-scrollbar-thumb, .overview-content::-webkit-scrollbar-thumb, .log-scroll-area::-webkit-scrollbar-thumb, .avp-content::-webkit-scrollbar-thumb, .avp-list-scroll::-webkit-scrollbar-thumb { background-color: #374155; border-radius: 3px; }
+
+        /* 모바일(스마트폰) 전용 배치 및 헤더 숨김 처리 (화면 좁을 때 겹침 방지) */
+        @media screen and (max-width: 900px) {
+            #main-container {
+                flex-direction: column;
+                top: 55px;
+                bottom: 175px;
+                left: 10px; right: 10px;
+                gap: 8px;
+            }
+            .panel-box {
+                flex: none;
+                height: 31vh;
+            }
+            #log-panel { order: 1; }
+            #arrived-vehicles-panel { order: 2; }
+            #overview-panel { order: 3; }
+            /* 모바일 화면에서는 상단 로고를 숨겨 공간 확보 */
+            #header-branding { display: none; }
+            #status-board { width: 85%; }
+        }
+
+        /* 하단 제어 패널 */
+        #input-panel {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 165px;
+            background: #111827; padding: 10px; box-sizing: border-box;
+            border-top: 1px solid #1f2937; z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+        }
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 850px; margin: 0 auto; }
+        .btn-quick { padding: 9px 2px; font-size: 12px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; word-break: keep-all; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn-quick:active { filter: brightness(0.85); }
+        
+        #btn-receipt { background-color: #0369a1; }       
+        #btn-dispatch { background-color: #ca8a04; }      
+        #btn-arrive-action { background-color: #0284c7; } 
+        #btn-alert { background-color: #dc2626; }         
+        #btn-chief { background-color: #7c3aed; }         
+        #btn-hq { background-color: #db2777; }            
+        #btn-chojin { background-color: #d97706; }        
+        #btn-wanjin { background-color: #16a34a; }        
+
+        .input-row { display: flex; gap: 8px; width: 100%; max-width: 850px; margin: 0 auto; }
+        input[type="text"] { flex-grow: 1; padding: 9px 12px; font-size: 13px; border: 1px solid #374155; border-radius: 6px; background: #1f2937; color: #fff; }
+        input[type="text"]:focus { outline: none; border-color: #38bdf8; }
+        .btn-send { padding: 9px 18px; font-size: 13px; font-weight: bold; background: #475569; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-send:hover { background: #526075; }
+
+        /* 차량 다중 선택 모달창 */
+        #vehicle-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: #1f2937; padding: 16px; border-radius: 10px; width: 92%; max-width: 450px; color: white; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.7); display: flex; flex-direction: column; }
+        .modal-header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
+        .modal-title { font-size: 15px; font-weight: bold; color: #38bdf8; }
+        .modal-top-btns { display: flex; gap: 6px; }
+        .btn-mini-action { padding: 5px 10px; font-size: 11px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-mini-submit { background: #0284c7; color: white; }
+        .btn-mini-close { background: #475569; color: white; }
+        .center-group { margin-bottom: 12px; }
+        .center-title { font-size: 13px; font-weight: bold; color: #fbbf24; margin-bottom: 5px; }
+        .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .veh-check-label { 
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            background: #334155; border: 1px solid #4b5563; color: #f8fafc; 
+            border-radius: 4px; padding: 6px 2px; font-size: 11px; cursor: pointer; user-select: none; 
+        }
+        .veh-check-label input[type="checkbox"] { accent-color: #0284c7; width: 14px; height: 14px; cursor: pointer; }
+        .modal-footer { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-modal-action { flex: 1; padding: 10px; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        #btn-submit-arrive { background: #0284c7; color: white; }
+        #btn-close-modal { background: #475569; color: white; }
+    </style>
+</head>
+<body>
+
+    <button id="btn-clear-data">🔥 초기화</button>
+    <div id="status-board">지휘차 대기중</div>
+    
+    <!-- ✨ 우측 상단 소방청 심볼 및 기관명 브랜딩 영역 ✨ -->
+    <div id="header-branding">
+        <!-- 폴더 내 심볼 이미지 파일명(예: symbol.png)에 맞춰 src를 수정해 주세요 -->
+        <img src="symbol.png" alt="소방청 심볼" onerror="this.style.display='none'">
+        <span>제주소방서 현장대응단</span>
+    </div>
+
+    <!-- 3분할 메인 레이아웃 -->
+    <div id="main-container">
+        <!-- 1. 좌측 패널: 현장 정보 요약 -->
+        <div class="panel-box" id="overview-panel">
+            <div class="panel-header">📋 현장 정보 요약</div>
+            <div class="overview-content">
+                <div class="ov-section-title">📌 발생 개요</div>
+                <div class="ov-row"><span class="ov-label">일시</span><textarea class="ov-input" id="ov-time" placeholder="예) 오늘 14:30"></textarea></div>
+                <div class="ov-row"><span class="ov-label">장소</span><textarea class="ov-input" id="ov-place" placeholder="건물명 또는 주소"></textarea></div>
+                <div class="ov-row"><span class="ov-label">건물구조</span><textarea class="ov-input" id="ov-struct" placeholder="예) 철근콘크리트조 지상4층"></textarea></div>
+                <div class="ov-row"><span class="ov-label">관계자</span><textarea class="ov-input" id="ov-owner" placeholder="소유자 / 관리자"></textarea></div>
+                <div class="ov-row"><span class="ov-label">원인</span><textarea class="ov-input" id="ov-cause" placeholder="조사중 / 미상"></textarea></div>
+
+                <div class="ov-section-title">⚠️ 피해 상황</div>
+                <div class="ov-row"><span class="ov-label">인명피해</span><textarea class="ov-input" id="ov-casualty" placeholder="사망 0, 부상 0"></textarea></div>
+                <div class="ov-row"><span class="ov-label">재산피해</span><textarea class="ov-input" id="ov-property" placeholder="조사중"></textarea></div>
+
+                <div class="ov-section-title">🚒 동원 현황</div>
+                <div class="ov-row"><span class="ov-label">동원인원</span><textarea class="ov-input" id="ov-manpower" placeholder="소방 00명 / 유관 0명"></textarea></div>
+                <div class="ov-row"><span class="ov-label">동원장비</span><textarea class="ov-input" id="ov-equipment" placeholder="소방 00대 / 유관 0대"></textarea></div>
+
+                <div class="ov-section-title">🌤️ 기상 상황</div>
+                <div class="weather-grid">
+                    <div class="weather-box">
+                        <div class="weather-title">기온</div>
+                        <input type="text" class="weather-input" id="wx-temp" placeholder="22℃">
+                    </div>
+                    <div class="weather-box">
+                        <div class="weather-title">습도</div>
+                        <input type="text" class="weather-input" id="wx-humidity" placeholder="60%">
+                    </div>
+                    <div class="weather-box">
+                        <div class="weather-title">날씨</div>
+                        <input type="text" class="weather-input" id="wx-condition" placeholder="맑음">
+                    </div>
+                    <div class="weather-box">
+                        <div class="weather-title">풍속</div>
+                        <input type="text" class="weather-input" id="wx-wind" placeholder="2.5m/s">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 가운데 패널: 타임라인 -->
+        <div class="panel-box" id="log-panel">
+            <div class="panel-header">TIME LINE</div>
+            <div class="log-scroll-area" id="log-container"></div>
+        </div>
+
+        <!-- 3. 우측 패널: 현장 도착 현황 -->
+        <div class="panel-box" id="arrived-vehicles-panel">
+            <div class="avp-header">
+                <span>🚒 현장 도착 현황</span>
+                <div class="avp-header-right">
+                    <span id="total-veh-badge">총 0대</span>
+                    <button id="btn-top-add-veh">+ 차량등록</button>
+                </div>
+            </div>
+            <div class="avp-content">
+                <div class="avp-list-scroll" id="avp-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 제어 패널 -->
+    <div id="input-panel">
+        <div class="quick-actions">
+            <button class="btn-quick" id="btn-receipt">신고 접수</button>
+            <button class="btn-quick" id="btn-dispatch">출동 지령</button>
+            <button class="btn-quick" id="btn-arrive-action">현장 도착</button> 
+            <button class="btn-quick" id="btn-alert">대응1단계 선언</button>
+            <button class="btn-quick" id="btn-chief">서장 도착</button>
+            <button class="btn-quick" id="btn-hq">본부장 도착</button>
+            <button class="btn-quick" id="btn-chojin">초진 선언</button>
+            <button class="btn-quick" id="btn-wanjin">완진 (종료)</button>
+        </div>
+        <div class="input-row">
+            <input type="text" id="status-input" placeholder="세부 진행상황 직접 입력">
+            <button class="btn-send" id="btn-send">전파</button>
+        </div>
+    </div>
+
+    <!-- 차량 다중 선택 모달창 -->
+    <div id="vehicle-modal">
+        <div class="modal-content">
+            <div class="modal-header-top">
+                <span class="modal-title">현장 도착 차량 선택</span>
+                <div class="modal-top-btns">
+                    <button class="btn-mini-action btn-mini-submit" id="btn-top-submit">선택완료</button>
+                    <button class="btn-mini-action btn-mini-close" id="btn-top-close">닫기</button>
+                </div>
+            </div>
+            <div id="center-list-container"></div>
+            <div class="modal-footer">
+                <button class="btn-modal-action" id="btn-submit-arrive">선택 완료 (일괄 등록)</button>
+                <button class="btn-modal-action" id="btn-close-modal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAT7osxJ_9xz6SexPw9ZjIuqmRm_WyXfQ",
+          authDomain: "jejufire119-board.firebaseapp.com",
+          databaseURL: "https://jejufire119-board-default-rtdb.firebaseio.com",
+          projectId: "jejufire119-board",
+          storageBucket: "jejufire119-board.firebasestorage.app",
+          messagingSenderId: "144239225517",
+          appId: "1:144239225517:web:4bba594247525ea4bff424"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const logsRef = database.ref('fireStationLogs');
+        const statusRef = database.ref('fireStationStatus');
+        const arrivedRef = database.ref('arrivedVehicles');
+        const overviewRef = database.ref('fireStationOverview'); 
+
+        const statusBoard = document.getElementById('status-board');
+        const logContainer = document.getElementById('log-container');
+        const inputField = document.getElementById('status-input');
+        
+        let logsData = []; 
+        let arrivedVehicles = [];
+
+        const overviewFields = ['ov-time', 'ov-place', 'ov-struct', 'ov-owner', 'ov-cause', 'ov-casualty', 'ov-property', 'ov-manpower', 'ov-equipment', 'wx-temp', 'wx-humidity', 'wx-condition', 'wx-wind'];
+        
+        overviewFields.forEach(fieldId => {
+            const el = document.getElementById(fieldId);
+            el.addEventListener('input', () => {
+                overviewRef.child(fieldId).set(el.value);
+            });
+        });
+
+        overviewRef.on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            overviewFields.forEach(fieldId => {
+                const el = document.getElementById(fieldId);
+                if (document.activeElement !== el && data[fieldId] !== undefined) {
+                    el.value = data[fieldId];
+                }
+            });
+        });
+
+        statusRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                statusBoard.innerText = data.text;
+                statusBoard.style.backgroundColor = data.color;
+                if (data.color.includes("red") || data.color.includes("b91c1c") || data.color.includes("dc2626")) {
+                    statusBoard.classList.add('alert-level-1');
+                } else {
+                    statusBoard.classList.remove('alert-level-1');
+                }
+            } else {
+                statusBoard.innerText = "지휘차 대기중";
+                statusBoard.style.backgroundColor = "#15803d";
+                statusBoard.classList.remove('alert-level-1');
+            }
+        });
+
+        logsRef.on('value', (snapshot) => {
+            logsData = [];
+            snapshot.forEach((childSnapshot) => { logsData.push(childSnapshot.val()); });
+            renderLogs();
+        });
+
+        arrivedRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            arrivedVehicles = data ? data : [];
+            renderArrivedVehicles();
+        });
+
+        function addLog(message, color = "#f8fafc") {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
+            const logId = Date.now().toString() + Math.random().toString().replace('.','');
+            logsRef.child(logId).set({ id: logId, time: timeString, message: message, color: color });
+        }
+
+        function updateLogTime(id, newTime) {
+            logsRef.child(id).update({ time: newTime });
+        }
+
+        function deleteLog(id) {
+            if(confirm("이 기록을 삭제하시겠습니까?")) {
+                logsRef.child(id).remove();
+            }
+        }
+
+        function saveStatusState(text, color, emergencyFlag) {
+            statusRef.set({ text: text, color: color, isEmergency: emergencyFlag });
+        }
+
+        const fireCenters = [
+            { center: "현장대응단", v: ["지휘차"] }, { center: "이도", v: ["펌프", "물탱크", "사다리", "조연", "구급"] }, { center: "삼도", v: ["펌프", "물탱크", "구급"] },
+            { center: "연동", v: ["펌프", "물탱크", "사다리", "구급"] }, { center: "오라", v: ["펌프", "물탱크", "구급"] }, { center: "항만", v: ["펌프", "화학", "구급"] },
+            { center: "외도", v: ["펌프", "물탱크", "무인파괴", "구급"] }, { center: "화북", v: ["펌프", "물탱크", "고가사다리", "구급"] }, { center: "아라", v: ["펌프", "물탱크", "구급"] },
+            { center: "노형", v: ["펌프", "물탱크", "구급"] }, { center: "구조대", v: ["구조차", "생활안전"] }
+        ];
+
+        const modalContainer = document.getElementById('center-list-container');
+        fireCenters.forEach(fc => {
+            let html = `<div class="center-group"><div class="center-title">${fc.center}</div><div class="veh-checkbox-grid">`;
+            fc.v.forEach(veh => {
+                const fullName = `${fc.center} ${veh}`;
+                html += `
+                    <label class="veh-check-label">
+                        <input type="checkbox" class="veh-checkbox" value="${fullName}">
+                        <span>${veh}</span>
+                    </label>
+                `;
+            });
+            html += `</div></div>`; 
+            modalContainer.innerHTML += html;
+        });
+
+        const openModalFunc = () => {
+            document.querySelectorAll('.veh-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('vehicle-modal').style.display = 'flex';
+        };
+
+        document.getElementById('btn-top-add-veh').addEventListener('click', openModalFunc);
+
+        const closeModalFunc = () => { document.getElementById('vehicle-modal').style.display = 'none'; };
+        document.getElementById('btn-close-modal').addEventListener('click', closeModalFunc);
+        document.getElementById('btn-top-close').addEventListener('click', closeModalFunc);
+
+        const submitArriveFunc = () => {
+            const checkedBoxes = document.querySelectorAll('.veh-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert("등록할 차량을 하나 이상 선택해 주세요.");
+                return;
+            }
+
+            let newlyAddedCount = 0;
+            checkedBoxes.forEach(cb => {
+                const fullName = cb.value;
+                if (!arrivedVehicles.includes(fullName)) {
+                    arrivedVehicles.push(fullName);
+                    newlyAddedCount++;
+                }
+            });
+
+            if (newlyAddedCount > 0) {
+                arrivedRef.set(arrivedVehicles);
+            } else {
+                alert("선택하신 차량들은 이미 모두 현장 도착 처리되어 있습니다.");
+            }
+
+            document.getElementById('vehicle-modal').style.display = 'none';
+        };
+
+        document.getElementById('btn-submit-arrive').addEventListener('click', submitArriveFunc);
+        document.getElementById('btn-top-submit').addEventListener('click', submitArriveFunc);
+
+        function renderArrivedVehicles() {
+            const avpList = document.getElementById('avp-list'); avpList.innerHTML = "";
+            
+            const totalCount = arrivedVehicles.length;
+            document.getElementById('total-veh-badge').innerText = `총 ${totalCount}대`;
+
+            if(totalCount === 0) { 
+                avpList.innerHTML = "<div style='text-align:center; padding-top:25px; color:#94a3b8;'>도착 차량 없음</div>"; 
+                return; 
+            }
+
+            const grouped = {};
+            arrivedVehicles.forEach(fullName => {
+                const parts = fullName.split(' '); const vehType = parts[1] || parts[0]; const centerName = parts[0];
+                if(!grouped[vehType]) grouped[vehType] = []; grouped[vehType].push(centerName);
+            });
+            
+            for(let type in grouped) {
+                let html = `<div class="avp-category">${type} (${grouped[type].length}대)</div><div class="avp-grid">`;
+                grouped[type].forEach(center => {
+                    const fullName = `${center} ${type}`;
+                    html += `<div class="avp-item" data-vehicle="${fullName}" title="클릭시 목록에서 제거">${center}</div>`; 
+                });
+                html += `</div>`; avpList.innerHTML += html;
+            }
+
+            document.querySelectorAll('.avp-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetVeh = this.getAttribute('data-vehicle');
+                    if(confirm(`[${targetVeh}] 차량을 현장 도착 목록에서 제외하시겠습니까?`)) {
+                        arrivedVehicles = arrivedVehicles.filter(v => v !== targetVeh);
+                        arrivedRef.set(arrivedVehicles);
+                    }
+                });
+            });
+        }
+
+        function renderLogs() {
+            logContainer.innerHTML = ""; 
+
+            const sortedLogs = [...logsData].sort((a, b) => {
+                return (a.time || "").localeCompare(b.time || "");
+            });
+
+            sortedLogs.slice().reverse().forEach(log => {
+                const newLog = document.createElement('div');
+                newLog.className = 'log-entry';
+                newLog.innerHTML = `
+                    <div class="log-content">
+                        <span class="log-time">[<span class="edit-time" contenteditable="true" data-id="${log.id}">${log.time}</span>]</span> 
+                        <span style="color:${log.color}">${log.message}</span>
+                    </div>
+                    <button class="btn-delete-log" data-id="${log.id}">삭제</button>
+                `;
+                logContainer.appendChild(newLog);
+            });
+
+            document.querySelectorAll('.edit-time').forEach(el => {
+                el.addEventListener('blur', function() { updateLogTime(this.getAttribute('data-id'), this.innerText.trim()); });
+                el.addEventListener('keypress', function(e) { if(e.key === 'Enter') { e.preventDefault(); this.blur(); } });
+            });
+            document.querySelectorAll('.btn-delete-log').forEach(btn => {
+                btn.addEventListener('click', function() { deleteLog(this.getAttribute('data-id')); });
+            });
+        }
+
+        document.getElementById('btn-send').addEventListener('click', () => {
+            const text = inputField.value.trim();
+            if(text !== "") { addLog(text, "#f8fafc"); inputField.value = ""; }
+        });
+        inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('btn-send').click(); });
+
+        document.getElementById('btn-receipt').addEventListener('click', () => {
+            saveStatusState("📞 화재 신고 접수", "#0369a1", false);
+            addLog("화재 신고 접수 및 상황 전파", "#38bdf8");
+        });
+
+        document.getElementById('btn-dispatch').addEventListener('click', () => {
+            saveStatusState("🚨 출동 지령 하달", "#ca8a04", false);
+            addLog("관할 소방대 출동 지령 하달", "#fbbf24");
+        });
+
+        document.getElementById('btn-arrive-action').addEventListener('click', () => {
+            saveStatusState("🚒 관할대 현장 도착", "#0284c7", false);
+            addLog("관할대 현장 도착 완료", "#38bdf8");
+        });
+
+        document.getElementById('btn-alert').addEventListener('click', () => {
+            saveStatusState("🚨 대응 1단계 선언", "#b91c1c", true);
+            addLog("대응 1단계 선언 지휘 하달", "#f87171");
+        });
+
+        document.getElementById('btn-chief').addEventListener('click', () => {
+            saveStatusState("🚨 소방서장 지휘권 선언", "#7c3aed", false);
+            addLog("제주소방서장 현장 도착 및 지휘권 인수", "#c084fc");
+        });
+
+        document.getElementById('btn-hq').addEventListener('click', () => {
+            saveStatusState("🚨 본부장 지휘권 선언", "#db2777", false);
+            addLog("제주소방안전본부장 현장 도착 및 지휘권 인수", "#f472b6");
+        });
+
+        document.getElementById('btn-chojin').addEventListener('click', () => {
+            saveStatusState("🔥 초진 완료 / 잔불 정리중", "#d97706", false);
+            addLog("화세 제압 (초진 선언)", "#fbbf24");
+        });
+
+        document.getElementById('btn-wanjin').addEventListener('click', () => {
+            saveStatusState("✅ 완진 (상황 종료)", "#15803d", false);
+            addLog("완전 진화 및 상황 종료", "#4ade80");
+        });
+
+        document.getElementById('btn-clear-data').addEventListener('click', () => {
+            if(confirm("모든 현장 기록 및 요약 정보를 초기화하시겠습니까?")) {
+                logsRef.remove(); statusRef.remove(); arrivedRef.remove(); overviewRef.remove();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -16,7 +16,7 @@
             background-color: #0b0f19; 
             color: #f8fafc; 
             font-family: 'Malgun Gothic', sans-serif; 
-            height: 100vh; overflow: hidden;
+            min-height: 100vh; overflow-x: hidden;
         }
         
         /* 상단 상태 바 */
@@ -146,7 +146,7 @@
         .panel-box::-webkit-scrollbar, .overview-content::-webkit-scrollbar, .log-scroll-area::-webkit-scrollbar, .avp-content::-webkit-scrollbar, .avp-list-scroll::-webkit-scrollbar { width: 5px; }
         .panel-box::-webkit-scrollbar-thumb, .overview-content::-webkit-scrollbar-thumb, .log-scroll-area::-webkit-scrollbar-thumb, .avp-content::-webkit-scrollbar-thumb, .avp-list-scroll::-webkit-scrollbar-thumb { background-color: #374155; border-radius: 3px; }
 
-        /* 📱 바형 스마트폰 전용 레이아웃 분기 */
+        /* 📱 바형 스마트폰 전용 레이아웃 분기 (완벽한 중앙 정렬) */
         @media screen and (max-width: 900px) {
             body { 
                 height: auto !important; 
@@ -158,8 +158,10 @@
                 position: relative !important;
                 top: 50px !important;
                 bottom: auto !important;
-                left: 10px !important; right: 10px !important;
+                left: 0 !important; 
+                right: 0 !important;
                 width: calc(100% - 20px) !important;
+                max-width: calc(100% - 20px) !important;
                 margin: 0 auto !important;
                 flex-direction: column !important;
                 height: auto !important;
@@ -210,7 +212,7 @@
                 padding: 10px 10px 14px 10px !important;
             }
 
-            /* 하단 고정 패널 뒤로 밀려나는 것을 방지하는 물리적 스페이서 */
+            /* 하단 스페이서 */
             #mobile-bottom-spacer {
                 display: block !important;
                 order: 4;
@@ -447,14 +449,14 @@
                 if (window.innerWidth > 900) {
                     mainContainer.style.bottom = "55px";
                 } else if (bottomSpacer) {
-                    bottomSpacer.style.height = "65px"; /* 42px(접힌 패널) + 23px(간격) */
+                    bottomSpacer.style.height = "65px";
                 }
             } else {
                 toggleBtn.innerText = "▲ 패널 접기";
                 if (window.innerWidth > 900) {
                     mainContainer.style.bottom = "175px";
                 } else if (bottomSpacer) {
-                    bottomSpacer.style.height = "185px"; /* 165px(펼친 패널) + 20px(간격) */
+                    bottomSpacer.style.height = "185px";
                 }
             }
         });

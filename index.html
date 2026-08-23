@@ -24,7 +24,7 @@
         #bg-captain {
             position: fixed;
             top: 50%;
-            left: -40px; /* 좌측으로 이동하여 무전기 든 팔 부분이 살짝 걸치도록 조정 */
+            left: -40px;
             transform: translateY(-50%);
             height: 68vh;
             max-height: 620px;
@@ -73,7 +73,7 @@
             position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
             color: #fff; font-size: 14px; font-weight: bold; text-align: center;
             background-color: #15803d; padding: 6px 14px;
-            border-radius: 8px; width: 40%; max-width: 280px;
+            border-radius: 8px; width: 45%; max-width: 300px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
             border: 1px solid rgba(255,255,255,0.15);
             letter-spacing: 0.5px;
@@ -85,29 +85,12 @@
         }
         @keyframes blink { 50% { opacity: 0.8; box-shadow: 0 0 20px #ef4444; } }
 
-        /* 상단 우측 그룹 (한글 다운로드 + 화면 잠금) */
-        #top-right-group {
-            position: fixed; top: 10px; right: 8px;
-            display: flex; align-items: center; gap: 5px; z-index: 110;
-        }
-
-        /* 📥 한글(HWP) 보고서 다운로드 버튼 */
-        #btn-download-hwp {
-            padding: 5px 8px;
-            background-color: #065f46; color: #6ee7b7; border: 1px solid #059669;
-            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;
-        }
-        #btn-download-hwp:hover { background-color: #047857; color: #fff; }
-
         /* 화면 잠금 / 조회 모드 토글 버튼 */
         #btn-lock-mode {
-            padding: 5px 8px;
+            position: fixed; top: 10px; right: 8px; padding: 5px 9px;
             background-color: #1e293b; color: #38bdf8; border: 1px solid #0284c7;
-            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;
+            border-radius: 6px; font-size: 11px; cursor: pointer; z-index: 110; font-weight: bold;
+            display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
         #btn-lock-mode.active-locked {
             background-color: #991b1b; color: #fecaca; border-color: #ef4444;
@@ -248,7 +231,6 @@
         }
         body.locked-mode #btn-top-add-veh,
         body.locked-mode #btn-clear-data,
-        body.locked-mode #btn-download-hwp,
         body.locked-mode .quick-actions button,
         body.locked-mode .btn-send {
             pointer-events: none !important;
@@ -335,12 +317,11 @@
             #header-branding span { display: none; } 
             #header-branding { padding: 3px 5px; }
             #status-board { 
-                width: 38%; font-size: 11px; padding: 4px 6px; top: 10px; 
+                width: 44%; font-size: 11px; padding: 4px 6px; top: 10px; 
                 left: 50% !important; transform: translateX(-50%) !important; 
             }
             #btn-clear-data { padding: 4px 6px; font-size: 9px; }
-            #btn-download-hwp { padding: 4px 6px; font-size: 9px; }
-            #btn-lock-mode { padding: 4px 6px; font-size: 9px; }
+            #btn-lock-mode { top: 10px; padding: 4px 6px; font-size: 10px; }
 
             /* 키보드 입력 시 타임라인 집중 모드 */
             body.mobile-typing {
@@ -450,11 +431,8 @@
     <!-- 중앙 상단: 상태 바 -->
     <div id="status-board">지휘차 대기중</div>
 
-    <!-- 우측 상단: 한글 보고서 다운로드 + 화면 잠금 토글 -->
-    <div id="top-right-group">
-        <button id="btn-download-hwp">📥 한글보고서</button>
-        <button id="btn-lock-mode">🔓 수정 모드</button>
-    </div>
+    <!-- 우측 상단: 화면 잠금 토글 -->
+    <button id="btn-lock-mode">🔓 수정 모드</button>
 
     <!-- 3분할 메인 레이아웃 -->
     <div id="main-container">
@@ -589,150 +567,6 @@
 
         let logsData = []; 
         let arrivedVehicles = [];
-
-        // 📥 한글(HWP) 보고서 파일 생성 및 다운로드 함수
-        document.getElementById('btn-download-hwp').addEventListener('click', () => {
-            const getVal = (id, def = "해당 없음") => {
-                const el = document.getElementById(id);
-                return (el && el.value.trim() !== "") ? el.value.trim() : def;
-            };
-
-            const ovTime = getVal('ov-time');
-            const ovPlace = getVal('ov-place');
-            const ovStruct = getVal('ov-struct');
-            const ovOwner = getVal('ov-owner');
-            const ovCause = getVal('ov-cause');
-            const ovCasualty = getVal('ov-casualty');
-            const ovProperty = getVal('ov-property');
-            const ovManpower = getVal('ov-manpower');
-            const ovEquipment = getVal('ov-equipment');
-            const wxTemp = getVal('wx-temp', '-');
-            const wxHum = getVal('wx-humidity', '-');
-            const wxCond = getVal('wx-condition', '-');
-            const wxWind = getVal('wx-wind', '-');
-
-            const sortedLogs = [...logsData].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-            let logRowsHtml = "";
-            if (sortedLogs.length === 0) {
-                logRowsHtml = `<tr><td colspan="2" style="text-align:center; padding:10px;">기록된 타임라인 내역이 없습니다.</td></tr>`;
-            } else {
-                sortedLogs.forEach(log => {
-                    logRowsHtml += `
-                        <tr>
-                            <td style="text-align:center; width:22%; font-weight:bold; background:#fafafa;">[${log.time}]</td>
-                            <td style="padding-left:10px;">${log.message}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            let arrivedVehText = "없음";
-            if (arrivedVehicles.length > 0) {
-                const grouped = {};
-                arrivedVehicles.forEach(fullName => {
-                    const parts = fullName.split(' ');
-                    const vehType = parts[1] || parts[0];
-                    const centerName = parts[0];
-                    if(!grouped[vehType]) grouped[vehType] = [];
-                    grouped[vehType].push(centerName);
-                });
-                const summaryList = [];
-                for(let type in grouped) {
-                    summaryList.push(`${type} ${grouped[type].length}대(${grouped[type].join(', ')})`);
-                }
-                arrivedVehText = `총 ${arrivedVehicles.length}대 [ ${summaryList.join(' / ')} ]`;
-            }
-
-            const hwpTemplate = `
-            <!DOCTYPE html>
-            <html lang="ko">
-            <head>
-                <meta charset="UTF-8">
-                <title>화재발생 상황보고서</title>
-                <style>
-                    body { font-family: '맑은 고딕', 'Malgun Gothic', '휴먼명조', serif; font-size: 11pt; line-height: 1.6; color: #000; margin: 30px; }
-                    .report-title { text-align: center; font-size: 20pt; font-weight: bold; margin-bottom: 25px; letter-spacing: 2px; text-decoration: underline; }
-                    .header-sub { text-align: right; font-size: 10pt; margin-bottom: 15px; color: #444; }
-                    .sec-title { font-size: 13pt; font-weight: bold; margin-top: 20px; margin-bottom: 8px; color: #0f172a; border-left: 4px solid #0369a1; padding-left: 8px; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
-                    th, td { border: 1px solid #334155; padding: 7px 10px; font-size: 10.5pt; vertical-align: middle; word-break: break-all; }
-                    th { background-color: #f1f5f9; font-weight: bold; text-align: center; width: 22%; }
-                    .footer-note { text-align: center; margin-top: 35px; font-size: 12pt; font-weight: bold; letter-spacing: 1px; }
-                </style>
-            </head>
-            <body>
-                <div class="report-title">화재발생 상황보고서</div>
-                <div class="header-sub">제주소방서 현장대응단 | 상황발령: ${statusBoard.innerText}</div>
-
-                <div class="sec-title">1. 발생 개요</div>
-                <table>
-                    <tr>
-                        <th>일 시</th><td>${ovTime}</td>
-                        <th>장 소</th><td>${ovPlace}</td>
-                    </tr>
-                    <tr>
-                        <th>건물 구조</th><td>${ovStruct}</td>
-                        <th>관 계 자</th><td>${ovOwner}</td>
-                    </tr>
-                    <tr>
-                        <th>발생 원인</th><td colspan="3">${ovCause}</td>
-                    </tr>
-                </table>
-
-                <div class="sec-title">2. 피해 현황</div>
-                <table>
-                    <tr>
-                        <th>인명 피해</th><td>${ovCasualty}</td>
-                        <th>재산 피해</th><td>${ovProperty}</td>
-                    </tr>
-                </table>
-
-                <div class="sec-title">3. 동원 현황 및 현장 기상</div>
-                <table>
-                    <tr>
-                        <th>동원 인원</th><td>${ovManpower}</td>
-                        <th>동원 장비</th><td>${ovEquipment}</td>
-                    </tr>
-                    <tr>
-                        <th>현장도착 차량</th><td colspan="3">${arrivedVehText}</td>
-                    </tr>
-                    <tr>
-                        <th>현장 기상</th>
-                        <td colspan="3">기온: ${wxTemp} | 습도: ${wxHum} | 날씨: ${wxCond} | 풍속: ${wxWind}</td>
-                    </tr>
-                </table>
-
-                <div class="sec-title">4. 시간대별 주요 조치사항 (타임라인)</div>
-                <table>
-                    <thead>
-                        <tr style="background:#e2e8f0;">
-                            <th style="width:22%;">시 간</th>
-                            <th style="width:78%;">주 요 조 치 및 상 황</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${logRowsHtml}
-                    </tbody>
-                </table>
-
-                <div class="footer-note">제 주 소 방 서&nbsp;&nbsp;현 장 대 응 단</div>
-            </body>
-            </html>
-            `;
-
-            const blob = new Blob(['\ufeff' + hwpTemplate], { type: 'application/vnd.hancom.hwp;charset=utf-8' });
-            const now = new Date();
-            const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
-            const fileName = `${dateStr}_화재발생상황보고서.hwp`;
-
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-        });
 
         // ⌨️ 입력창 터치 시 화면을 강제로 최상단 타임라인 뷰로 고정
         inputField.addEventListener('focus', () => {

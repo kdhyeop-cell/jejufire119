@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>제주소방서 현장대응단 - 실시간 지휘 상황판</title>
     
+    <!-- 프리미엄 UI 폰트 (Pretendard) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
     <!-- 파이어베이스 라이브러리 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -13,432 +16,382 @@
         * { box-sizing: border-box; }
         body { 
             margin: 0; padding: 0; 
-            background-color: #0b0f19; 
-            color: #f8fafc; 
-            font-family: 'Malgun Gothic', sans-serif; 
+            background: radial-gradient(circle at 50% 10%, #111827 0%, #070a12 100%);
+            color: #f1f5f9; 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             min-height: 100vh; overflow-x: hidden;
             position: relative;
+            letter-spacing: -0.2px;
         }
 
-        /* 🚒 좌측 지휘관 배경 캐릭터 (크기 축소 & 좌측 밀착 배치) */
+        /* 🚒 좌측 지휘관 배경 캐릭터 (HUD 자연스러운 블렌딩) */
         #bg-captain {
             position: fixed;
             top: 50%;
-            left: -40px; /* 좌측으로 이동하여 무전기 든 팔 부분이 살짝 걸치도록 조정 */
+            left: -40px;
             transform: translateY(-50%);
-            height: 68vh;
-            max-height: 620px;
+            height: 70vh;
+            max-height: 640px;
             z-index: 1;
             pointer-events: none;
             user-select: none;
-            filter: drop-shadow(5px 0 15px rgba(0,0,0,0.7));
-            opacity: 0.95;
+            filter: drop-shadow(8px 0 25px rgba(0,0,0,0.8));
+            opacity: 0.88;
+            mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
             display: block;
         }
 
-        /* 스마트폰 및 태블릿(가로 폭 1450px 이하)에서는 여백 부족으로 숨김 */
         @media screen and (max-width: 1450px) {
-            #bg-captain {
-                display: none !important;
-            }
+            #bg-captain { display: none !important; }
         }
         
-        /* 상단 좌측 그룹 (초기화 버튼 + 심볼/문구) */
+        /* 상단 좌측 그룹 */
         #top-left-group {
-            position: fixed; top: 10px; left: 8px;
-            display: flex; align-items: center; gap: 6px; z-index: 100;
+            position: fixed; top: 12px; left: 12px;
+            display: flex; align-items: center; gap: 8px; z-index: 100;
         }
 
         /* DB 초기화 버튼 */
         #btn-clear-data {
-            padding: 5px 8px;
-            background-color: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b;
-            border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: bold;
-            flex-shrink: 0;
+            padding: 6px 10px;
+            background: rgba(153, 27, 27, 0.4); color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 700;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
         }
-        #btn-clear-data:hover { background-color: #991b1b; color: #fff; }
+        #btn-clear-data:hover { 
+            background: #dc2626; color: #fff; 
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+        }
 
-        /* 심볼 및 소방서명 브랜딩 영역 */
+        /* 심볼 및 소방서명 브랜딩 */
         #header-branding {
-            display: flex; align-items: center; gap: 6px;
-            background: #111827; padding: 3px 8px; border-radius: 6px;
-            border: 1px solid #374155; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            flex-shrink: 0;
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(15, 23, 42, 0.75); padding: 4px 10px; border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
         }
         #header-branding img { width: 20px; height: 20px; object-fit: contain; }
-        #header-branding span { color: #f8fafc; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        #header-branding span { color: #f8fafc; font-size: 11.5px; font-weight: 700; white-space: nowrap; letter-spacing: 0.3px; }
 
         /* 상단 상태 바 */
         #status-board {
-            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-            color: #fff; font-size: 14px; font-weight: bold; text-align: center;
-            background-color: #15803d; padding: 6px 14px;
-            border-radius: 8px; width: 40%; max-width: 280px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
-            border: 1px solid rgba(255,255,255,0.15);
+            position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+            color: #fff; font-size: 13.5px; font-weight: 800; text-align: center;
+            background: rgba(22, 101, 52, 0.85); padding: 7px 18px;
+            border-radius: 20px; width: 42%; max-width: 300px;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 1px solid rgba(74, 222, 128, 0.4);
             letter-spacing: 0.5px;
+            backdrop-filter: blur(12px);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            z-index: 100;
         }
         #status-board.alert-level-1 { 
-            background-color: #b91c1c; 
-            animation: blink 1s infinite; 
+            background: rgba(185, 28, 28, 0.9);
+            border-color: #ef4444;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+            animation: pulse-glow 1.2s infinite; 
         }
-        @keyframes blink { 50% { opacity: 0.8; box-shadow: 0 0 20px #ef4444; } }
+        @keyframes pulse-glow { 
+            50% { opacity: 0.85; box-shadow: 0 0 35px rgba(239, 68, 68, 0.9); transform: translateX(-50%) scale(1.02); } 
+        }
 
-        /* 상단 우측 그룹 (한글 다운로드 + 화면 잠금) */
+        /* 상단 우측 그룹 */
         #top-right-group {
-            position: fixed; top: 10px; right: 8px;
-            display: flex; align-items: center; gap: 5px; z-index: 110;
+            position: fixed; top: 12px; right: 12px;
+            display: flex; align-items: center; gap: 6px; z-index: 110;
         }
 
-        /* 📥 한글(HWP) 보고서 다운로드 버튼 */
         #btn-download-hwp {
-            padding: 5px 8px;
-            background-color: #065f46; color: #6ee7b7; border: 1px solid #059669;
-            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;
+            padding: 6px 11px;
+            background: rgba(6, 78, 59, 0.6); color: #6ee7b7; 
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 700;
+            display: flex; align-items: center; gap: 4px; 
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
         }
-        #btn-download-hwp:hover { background-color: #047857; color: #fff; }
+        #btn-download-hwp:hover { background: #059669; color: #fff; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
 
-        /* 화면 잠금 / 조회 모드 토글 버튼 */
         #btn-lock-mode {
-            padding: 5px 8px;
-            background-color: #1e293b; color: #38bdf8; border: 1px solid #0284c7;
-            border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;
-            display: flex; align-items: center; gap: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            white-space: nowrap;
+            padding: 6px 11px;
+            background: rgba(15, 23, 42, 0.7); color: #38bdf8; 
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 700;
+            display: flex; align-items: center; gap: 4px;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
         }
         #btn-lock-mode.active-locked {
-            background-color: #991b1b; color: #fecaca; border-color: #ef4444;
+            background: rgba(153, 27, 27, 0.8); color: #fecaca; border-color: #ef4444;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
         }
 
-        /* 메인 컨테이너 (PC/태블릿: 3분할 가로 배치) */
+        /* 메인 컨테이너 */
         #main-container {
-            position: absolute; top: 55px; bottom: 175px; left: 15px; right: 15px;
-            display: flex; gap: 20px; z-index: 10;
+            position: absolute; top: 60px; bottom: 180px; left: 18px; right: 18px;
+            display: flex; gap: 16px; z-index: 10;
             max-width: 1600px; margin: 0 auto;
             transition: bottom 0.3s ease;
         }
 
+        /* 글래스모피즘 패널 공통 */
         .panel-box {
             flex: 1; 
-            background-color: #111827; border-radius: 8px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             min-width: 0;
         }
 
         .panel-header {
-            padding: 10px; text-align: center; color: #fff; font-size: 14px; font-weight: bold;
-            letter-spacing: 1px; flex-shrink: 0;
+            padding: 10px 14px; color: #fff; font-size: 13.5px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            letter-spacing: 0.3px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
         }
 
-        /* 1. 좌측: 현장 정보 요약 패널 */
-        #overview-panel { border: 1px solid #0d9488; }
-        #overview-panel .panel-header { background-color: #115e59; border-bottom: 1px solid #0d9488; }
-        .overview-content { flex: 1; overflow-y: auto; padding: 10px 10px 14px 10px; font-size: 12px; }
-        .ov-section-title { font-size: 12px; font-weight: bold; color: #5eead4; margin: 8px 0 4px 0; border-bottom: 1px dashed #134e4a; padding-bottom: 2px; }
+        /* 1. 좌측: 현장 정보 요약 */
+        #overview-panel { border-top: 2px solid #0d9488; }
+        #overview-panel .panel-header { color: #5eead4; }
+        .overview-content { flex: 1; overflow-y: auto; padding: 12px 14px; font-size: 12px; }
+        .ov-section-title { 
+            font-size: 11.5px; font-weight: 800; color: #2dd4bf; 
+            margin: 10px 0 6px 0; padding-bottom: 4px;
+            border-bottom: 1px solid rgba(45, 212, 191, 0.15);
+            letter-spacing: 0.5px;
+        }
         .ov-section-title:first-child { margin-top: 0; }
-        .ov-row { display: flex; align-items: stretch; margin-bottom: 5px; gap: 6px; }
-        .ov-label { width: 65px; color: #94a3b8; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; }
+        .ov-row { display: flex; align-items: stretch; margin-bottom: 6px; gap: 8px; }
+        .ov-label { width: 62px; color: #94a3b8; font-weight: 600; flex-shrink: 0; display: flex; align-items: center; font-size: 11.5px; }
         .ov-input { 
-            flex: 1; background: #1e293b; border: 1px solid #334155; color: #fff; 
-            padding: 5px 8px; border-radius: 4px; font-size: 12px; 
-            resize: vertical; min-height: 26px; max-height: 70px;
-            font-family: 'Malgun Gothic', sans-serif; line-height: 1.3;
+            flex: 1; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); color: #f8fafc; 
+            padding: 6px 10px; border-radius: 6px; font-size: 12px; 
+            resize: vertical; min-height: 28px; max-height: 70px;
+            font-family: inherit; line-height: 1.4;
+            transition: all 0.2s ease;
         }
-        .ov-input:focus { outline: none; border-color: #2dd4bf; }
+        .ov-input:focus { outline: none; border-color: #2dd4bf; background: rgba(30, 41, 59, 0.85); box-shadow: 0 0 8px rgba(45, 212, 191, 0.2); }
 
-        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 5px; margin-bottom: 2px; }
-        .weather-box { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 4px 2px; text-align: center; }
-        .weather-title { font-size: 10px; color: #94a3b8; margin-bottom: 2px; }
-        .weather-input { background: transparent; border: none; color: #2dd4bf; text-align: center; width: 100%; font-size: 11px; font-weight: bold; font-family: 'Malgun Gothic', sans-serif; }
-        .weather-input:focus { outline: none; background: rgba(255,255,255,0.1); }
+        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 6px; margin-bottom: 2px; }
+        .weather-box { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; padding: 5px 2px; text-align: center; }
+        .weather-title { font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 2px; }
+        .weather-input { background: transparent; border: none; color: #5eead4; text-align: center; width: 100%; font-size: 11.5px; font-weight: 700; font-family: inherit; }
+        .weather-input:focus { outline: none; background: rgba(255,255,255,0.06); border-radius: 3px; }
 
-        /* 2. 가운데: 타임라인 패널 */
-        #log-panel { border: 1px solid #dc2626; }
-        #log-panel .panel-header { background-color: #991b1b; border-bottom: 1px solid #dc2626; }
-        .log-scroll-area { flex: 1; overflow-y: auto; padding: 10px; }
+        /* 2. 가운데: 타임라인 */
+        #log-panel { border-top: 2px solid #ef4444; }
+        #log-panel .panel-header { color: #fca5a5; }
+        .log-scroll-area { flex: 1; overflow-y: auto; padding: 12px 14px; }
         .log-entry { 
             display: flex; justify-content: space-between; align-items: flex-start; 
-            margin-bottom: 8px; border-bottom: 1px dashed #1f2937; padding-bottom: 6px; 
-            font-size: 12px; gap: 6px;
+            margin-bottom: 7px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding-bottom: 7px; 
+            font-size: 12px; gap: 8px;
         }
-        .log-content { 
-            flex: 1; display: flex; align-items: flex-start; gap: 6px; 
-        }
+        .log-content { flex: 1; display: flex; align-items: flex-start; gap: 8px; }
         .log-time { 
-            color: #fca5a5; font-weight: bold; font-size: 11px; 
-            flex-shrink: 0; white-space: nowrap; margin-top: 1px;
+            color: #f87171; font-weight: 700; font-size: 11px; 
+            flex-shrink: 0; white-space: nowrap; margin-top: 1px; font-variant-numeric: tabular-nums;
         }
-        .edit-time { cursor: text; border-bottom: 1px dotted #fca5a5; display: inline-block; min-width: 48px; text-align: center; }
-        .edit-time:focus { background-color: rgba(255, 255, 255, 0.1); outline: none; border-radius: 3px; }
-        .log-msg { 
-            flex: 1; word-break: keep-all; line-height: 1.35; 
-        }
+        .edit-time { cursor: text; border-bottom: 1px dashed rgba(248, 113, 113, 0.5); display: inline-block; min-width: 48px; text-align: center; }
+        .edit-time:focus { background: rgba(255, 255, 255, 0.1); outline: none; border-radius: 3px; }
+        .log-msg { flex: 1; word-break: keep-all; line-height: 1.4; color: #e2e8f0; }
         .btn-delete-log { 
-            background: transparent; color: #f87171; border: 1px solid #7f1d1d; 
-            border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 4px; 
-            margin-left: 4px; white-space: nowrap; flex-shrink: 0;
+            background: rgba(127, 29, 29, 0.3); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); 
+            border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 5px; 
+            margin-left: 4px; white-space: nowrap; flex-shrink: 0; font-weight: 600;
+            transition: all 0.15s ease;
         }
-        .btn-delete-log:hover { background: #991b1b; color: white; }
+        .btn-delete-log:hover { background: #dc2626; color: white; border-color: #ef4444; }
 
-        /* 3. 우측: 현장 도착 현황 패널 (좌: 총0대 / 중: 제목 / 우: 등록버튼) */
-        #arrived-vehicles-panel { border: 1px solid #1d4ed8; }
+        /* 3. 우측: 현장 도착 현황 */
+        #arrived-vehicles-panel { border-top: 2px solid #3b82f6; }
         .avp-header { 
-            background-color: #1e40af; color: white; padding: 8px 10px; 
-            font-weight: bold; font-size: 13px; letter-spacing: 0.5px; 
+            padding: 9px 12px; color: #93c5fd;
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid #1d4ed8; flex-shrink: 0; gap: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-shrink: 0; gap: 6px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
         }
         #total-veh-badge {
-            background-color: rgba(0,0,0,0.3); color: #fbbf24; padding: 3px 6px;
-            border-radius: 10px; font-size: 11px; font-weight: bold; border: 1px solid rgba(251,191,36,0.3);
-            white-space: nowrap; flex-shrink: 0;
+            background: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 3px 8px;
+            border-radius: 12px; font-size: 11px; font-weight: 800; border: 1px solid rgba(251,191,36,0.3);
+            white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums;
         }
         .avp-header-title {
             text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            font-size: 13px; font-weight: bold;
+            font-size: 13.5px; font-weight: 700; color: #93c5fd;
         }
         #btn-top-add-veh {
-            background-color: #0284c7; color: white; border: none; border-radius: 4px;
-            padding: 3px 7px; font-size: 11px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background 0.2s;
-            white-space: nowrap; flex-shrink: 0;
+            background: rgba(2, 132, 199, 0.3); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 6px;
+            padding: 3px 9px; font-size: 11px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0;
         }
-        #btn-top-add-veh:hover { background-color: #0369a1; }
-        .avp-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; display: flex; flex-direction: column; }
+        #btn-top-add-veh:hover { background: #0284c7; color: white; box-shadow: 0 0 10px rgba(2, 132, 199, 0.4); }
+        .avp-content { flex: 1; overflow-y: auto; padding: 12px 14px; font-size: 12px; display: flex; flex-direction: column; }
         .avp-list-scroll { flex: 1; overflow-y: auto; }
-        .avp-category { font-weight: bold; color: #fbbf24; margin-top: 6px; border-bottom: 1px dashed #374155; padding-bottom: 2px; font-size: 12px; }
-        .avp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; margin-bottom: 8px; }
+        .avp-category { font-weight: 700; color: #f59e0b; margin-top: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 3px; font-size: 11.5px; letter-spacing: 0.3px; }
+        .avp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; margin-bottom: 8px; }
         .avp-item { 
-            background-color: #1e293b; border: 1px solid #334155; border-radius: 4px; 
-            padding: 5px 2px; text-align: center; color: #38bdf8; font-size: 11px; font-weight: bold; 
-            cursor: pointer; transition: all 0.15s; position: relative;
+            background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 6px; 
+            padding: 6px 2px; text-align: center; color: #38bdf8; font-size: 11.5px; font-weight: 700; 
+            cursor: pointer; transition: all 0.15s ease; position: relative;
         }
-        .avp-item:hover { background-color: #7f1d1d; border-color: #ef4444; color: #fff; }
+        .avp-item:hover { background: #991b1b; border-color: #ef4444; color: #fff; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
         .avp-item:hover::after { content: " ×"; font-size: 12px; font-weight: bold; color: #fca5a5; }
 
-        /* 데스크탑에서는 하단 스페이서 숨김 */
         #mobile-bottom-spacer { display: none; }
 
         /* 스크롤바 디자인 */
-        .panel-box::-webkit-scrollbar, .overview-content::-webkit-scrollbar, .log-scroll-area::-webkit-scrollbar, .avp-content::-webkit-scrollbar, .avp-list-scroll::-webkit-scrollbar { width: 5px; }
-        .panel-box::-webkit-scrollbar-thumb, .overview-content::-webkit-scrollbar-thumb, .log-scroll-area::-webkit-scrollbar-thumb, .avp-content::-webkit-scrollbar-thumb, .avp-list-scroll::-webkit-scrollbar-thumb { background-color: #374155; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
-        /* 🔒 화면 잠금(조회 전용) 모드 스타일 */
-        body.locked-mode input,
-        body.locked-mode textarea,
-        body.locked-mode .edit-time {
-            pointer-events: none !important;
-            user-select: none !important;
-            background-color: rgba(30, 41, 59, 0.45) !important;
-            border-color: #1e293b !important;
+        /* 🔒 화면 잠금(조회 전용) 모드 */
+        body.locked-mode input, body.locked-mode textarea, body.locked-mode .edit-time {
+            pointer-events: none !important; user-select: none !important;
+            background: rgba(30, 41, 59, 0.3) !important; border-color: rgba(255,255,255,0.03) !important; color: #94a3b8 !important;
         }
-        body.locked-mode .btn-delete-log {
-            display: none !important;
-        }
-        body.locked-mode .avp-item {
-            pointer-events: none !important;
-            cursor: default !important;
-        }
-        body.locked-mode .avp-item:hover::after {
-            content: "" !important;
-        }
-        body.locked-mode #btn-top-add-veh,
-        body.locked-mode #btn-clear-data,
-        body.locked-mode #btn-download-hwp,
-        body.locked-mode .quick-actions button,
-        body.locked-mode .btn-send {
-            pointer-events: none !important;
-            opacity: 0.35 !important;
-            cursor: not-allowed !important;
+        body.locked-mode .btn-delete-log { display: none !important; }
+        body.locked-mode .avp-item { pointer-events: none !important; cursor: default !important; }
+        body.locked-mode .avp-item:hover::after { content: "" !important; }
+        body.locked-mode #btn-top-add-veh, body.locked-mode #btn-clear-data, body.locked-mode #btn-download-hwp,
+        body.locked-mode .quick-actions button, body.locked-mode .btn-send {
+            pointer-events: none !important; opacity: 0.3 !important; cursor: not-allowed !important;
         }
 
-        /* 📱 바형 스마트폰 전용 레이아웃 분기 */
+        /* 📱 바형 스마트폰 전용 레이아웃 */
         @media screen and (max-width: 900px) {
-            body { 
-                height: auto !important; 
-                min-height: 100vh;
-                overflow-y: auto !important; 
-                -webkit-overflow-scrolling: touch;
-            }
+            body { height: auto !important; min-height: 100vh; overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
             #main-container {
-                position: relative !important;
-                top: 50px !important;
-                bottom: auto !important;
-                left: 0 !important; 
-                right: 0 !important;
-                width: calc(100% - 20px) !important;
-                max-width: calc(100% - 20px) !important;
-                margin: 0 auto !important;
-                flex-direction: column !important;
-                height: auto !important;
-                gap: 20px !important; 
+                position: relative !important; top: 52px !important; bottom: auto !important;
+                left: 0 !important; right: 0 !important; width: calc(100% - 16px) !important; max-width: calc(100% - 16px) !important;
+                margin: 0 auto !important; flex-direction: column !important; height: auto !important; gap: 14px !important; 
             }
-
-            /* 1. 타임라인 */
-            #log-panel { 
-                order: 1; 
-                height: 280px !important; 
-                flex: none; 
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-            #log-panel .log-scroll-area {
-                flex: 1;
-                overflow-y: auto !important;
-            }
-
-            /* 2. 현장 도착 현황 */
-            #arrived-vehicles-panel { 
-                order: 2; 
-                height: auto !important; 
-                flex: none; 
-                overflow: hidden !important;
-            }
-            #arrived-vehicles-panel .avp-content,
-            #arrived-vehicles-panel .avp-list-scroll {
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
-            }
-
-            /* 3. 현장 정보 요약 */
-            #overview-panel { 
-                order: 3; 
-                height: auto !important; 
-                flex: none; 
-                overflow: hidden !important;
-                border: 1px solid #0d9488 !important;
-                border-radius: 8px !important;
-            }
-            #overview-panel .overview-content {
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
-                padding: 10px 10px 14px 10px !important;
-            }
-
-            /* 하단 스페이서 */
-            #mobile-bottom-spacer {
-                display: block !important;
-                order: 4;
-                height: 185px;
-                flex-shrink: 0;
-                width: 100%;
-                pointer-events: none;
-            }
-            
+            #log-panel { order: 1; height: 280px !important; flex: none; display: flex; flex-direction: column; overflow: hidden; }
+            #log-panel .log-scroll-area { flex: 1; overflow-y: auto !important; }
+            #arrived-vehicles-panel { order: 2; height: auto !important; flex: none; overflow: hidden !important; }
+            #arrived-vehicles-panel .avp-content, #arrived-vehicles-panel .avp-list-scroll { overflow: visible !important; height: auto !important; max-height: none !important; }
+            #overview-panel { order: 3; height: auto !important; flex: none; overflow: hidden !important; }
+            #overview-panel .overview-content { overflow: visible !important; height: auto !important; max-height: none !important; padding: 10px 12px 14px 12px !important; }
+            #mobile-bottom-spacer { display: block !important; order: 4; height: 185px; flex-shrink: 0; width: 100%; pointer-events: none; }
             #header-branding span { display: none; } 
-            #header-branding { padding: 3px 5px; }
-            #status-board { 
-                width: 38%; font-size: 11px; padding: 4px 6px; top: 10px; 
-                left: 50% !important; transform: translateX(-50%) !important; 
-            }
-            #btn-clear-data { padding: 4px 6px; font-size: 9px; }
-            #btn-download-hwp { padding: 4px 6px; font-size: 9px; }
-            #btn-lock-mode { padding: 4px 6px; font-size: 9px; }
+            #header-branding { padding: 4px 6px; }
+            #status-board { width: 38%; font-size: 11px; padding: 5px 8px; top: 10px; left: 50% !important; transform: translateX(-50%) !important; }
+            #btn-clear-data { padding: 5px 7px; font-size: 9.5px; }
+            #btn-download-hwp { padding: 5px 7px; font-size: 9.5px; }
+            #btn-lock-mode { padding: 5px 7px; font-size: 9.5px; }
 
-            /* 키보드 입력 시 타임라인 집중 모드 */
-            body.mobile-typing {
-                overflow: hidden !important;
-            }
-            body.mobile-typing #overview-panel,
-            body.mobile-typing #arrived-vehicles-panel,
-            body.mobile-typing #mobile-bottom-spacer {
-                display: none !important;
-            }
-            body.mobile-typing #main-container {
-                top: 48px !important;
-                margin-bottom: 50px !important;
-            }
-            body.mobile-typing #log-panel {
-                height: calc(100dvh - 105px) !important;
-            }
-            body.mobile-typing #input-panel {
-                height: 44px !important;
-                padding: 4px 10px !important;
-                justify-content: center !important;
-            }
-            body.mobile-typing #input-panel .panel-toggle-bar,
-            body.mobile-typing #input-panel .quick-actions {
-                display: none !important;
-            }
+            body.mobile-typing { overflow: hidden !important; }
+            body.mobile-typing #overview-panel, body.mobile-typing #arrived-vehicles-panel, body.mobile-typing #mobile-bottom-spacer { display: none !important; }
+            body.mobile-typing #main-container { top: 48px !important; margin-bottom: 50px !important; }
+            body.mobile-typing #log-panel { height: calc(100dvh - 105px) !important; }
+            body.mobile-typing #input-panel { height: 46px !important; padding: 4px 10px !important; justify-content: center !important; }
+            body.mobile-typing #input-panel .panel-toggle-bar, body.mobile-typing #input-panel .quick-actions { display: none !important; }
         }
 
-        /* 하단 제어 패널 기본 스타일 */
+        /* 하단 제어 패널 */
         #input-panel {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 165px;
-            background: #111827; padding: 8px 10px 10px 10px; box-sizing: border-box;
-            border-top: 1px solid #374155; z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 6px;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
-            transition: height 0.2s ease, padding 0.2s ease;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 168px;
+            background: rgba(10, 15, 26, 0.85); padding: 8px 12px 12px 12px; box-sizing: border-box;
+            border-top: 1px solid rgba(255, 255, 255, 0.08); z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 7px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: height 0.25s ease, padding 0.25s ease;
         }
-        #input-panel.minimized { height: 42px; justify-content: flex-start; }
+        #input-panel.minimized { height: 44px; justify-content: flex-start; }
         #input-panel.minimized .quick-actions { display: none; }
 
         .panel-toggle-bar {
-            display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 850px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 900px; margin: 0 auto;
         }
-        .panel-toggle-title { font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 0.5px; }
+        .panel-toggle-title { font-size: 11px; color: #64748b; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
         #btn-toggle-panel {
-            background: #374155; color: #f8fafc; border: none; border-radius: 4px;
-            padding: 2px 10px; font-size: 11px; font-weight: bold; cursor: pointer;
+            background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;
+            padding: 2px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+            transition: all 0.15s ease;
         }
-        #btn-toggle-panel:hover { background: #4b5563; }
+        #btn-toggle-panel:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
-        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; width: 100%; max-width: 850px; margin: 0 auto; }
-        .btn-quick { padding: 8px 2px; font-size: 11px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; word-break: keep-all; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .btn-quick:active { filter: brightness(0.85); }
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 900px; margin: 0 auto; }
+        .btn-quick { 
+            padding: 8px 2px; font-size: 11.5px; font-weight: 700; color: white; border: none; border-radius: 8px; 
+            cursor: pointer; word-break: keep-all; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); 
+            font-family: inherit; transition: all 0.15s ease;
+        }
+        .btn-quick:active { transform: scale(0.97); filter: brightness(0.9); }
         
-        #btn-receipt { background-color: #0369a1; }       
-        #btn-dispatch { background-color: #ca8a04; }      
-        #btn-arrive-action { background-color: #0284c7; } 
-        #btn-alert { background-color: #dc2626; }         
-        #btn-chief { background-color: #7c3aed; }         
-        #btn-hq { background-color: #db2777; }            
-        #btn-chojin { background-color: #d97706; }        
-        #btn-wanjin { background-color: #16a34a; }        
+        #btn-receipt { background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%); }       
+        #btn-dispatch { background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%); color: #000; }      
+        #btn-arrive-action { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); } 
+        #btn-alert { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); }         
+        #btn-chief { background: linear-gradient(180deg, #a855f7 0%, #7e22ce 100%); }         
+        #btn-hq { background: linear-gradient(180deg, #ec4899 0%, #be185d 100%); }            
+        #btn-chojin { background: linear-gradient(180deg, #f97316 0%, #c2410c 100%); }        
+        #btn-wanjin { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); }        
 
-        .input-row { display: flex; gap: 6px; width: 100%; max-width: 850px; margin: 0 auto; }
-        input[type="text"] { flex-grow: 1; padding: 8px 12px; font-size: 12px; border: 1px solid #374155; border-radius: 6px; background: #1f2937; color: #fff; }
-        input[type="text"]:focus { outline: none; border-color: #38bdf8; }
-        .btn-send { padding: 8px 16px; font-size: 12px; font-weight: bold; background: #475569; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .btn-send:hover { background: #526075; }
+        .input-row { display: flex; gap: 8px; width: 100%; max-width: 900px; margin: 0 auto; }
+        input[type="text"] { 
+            flex-grow: 1; padding: 9px 14px; font-size: 12.5px; 
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; 
+            background: rgba(15, 23, 42, 0.7); color: #fff; font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        input[type="text"]:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.95); }
+        .btn-send { 
+            padding: 9px 18px; font-size: 12.5px; font-weight: 700; 
+            background: linear-gradient(180deg, #475569 0%, #334155 100%); 
+            color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-family: inherit; transition: all 0.15s ease;
+        }
+        .btn-send:hover { background: #475569; color: #38bdf8; }
 
         /* 차량 다중 선택 모달창 */
-        #vehicle-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
-        .modal-content { background: #1f2937; padding: 16px; border-radius: 10px; width: 92%; max-width: 450px; color: white; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.7); display: flex; flex-direction: column; }
-        .modal-header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
-        .modal-title { font-size: 15px; font-weight: bold; color: #38bdf8; }
+        #vehicle-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { 
+            background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 18px; border-radius: 14px; width: 92%; max-width: 460px; color: white; 
+            max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; 
+        }
+        .modal-header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 12px; }
+        .modal-title { font-size: 15px; font-weight: 800; color: #38bdf8; }
         .modal-top-btns { display: flex; gap: 6px; }
-        .btn-mini-action { padding: 5px 10px; font-size: 11px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-mini-action { padding: 5px 10px; font-size: 11px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; }
         .btn-mini-submit { background: #0284c7; color: white; }
-        .btn-mini-close { background: #475569; color: white; }
+        .btn-mini-close { background: rgba(255,255,255,0.1); color: #94a3b8; }
         .center-group { margin-bottom: 12px; }
-        .center-title { font-size: 13px; font-weight: bold; color: #fbbf24; margin-bottom: 5px; }
+        .center-title { font-size: 12.5px; font-weight: 700; color: #fbbf24; margin-bottom: 6px; }
         .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .veh-check-label { 
-            display: flex; align-items: center; justify-content: center; gap: 5px;
-            background: #334155; border: 1px solid #4b5563; color: #f8fafc; 
-            border-radius: 4px; padding: 6px 2px; font-size: 11px; cursor: pointer; user-select: none; 
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); color: #f8fafc; 
+            border-radius: 6px; padding: 7px 2px; font-size: 11.5px; font-weight: 600; cursor: pointer; user-select: none; 
+            transition: all 0.15s ease;
         }
+        .veh-check-label:hover { background: rgba(51, 65, 85, 0.8); border-color: #38bdf8; }
         .veh-check-label input[type="checkbox"] { accent-color: #0284c7; width: 14px; height: 14px; cursor: pointer; }
-        .modal-footer { display: flex; gap: 8px; margin-top: 12px; }
-        .btn-modal-action { flex: 1; padding: 10px; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        #btn-submit-arrive { background: #0284c7; color: white; }
-        #btn-close-modal { background: #475569; color: white; }
+        .modal-footer { display: flex; gap: 8px; margin-top: 14px; }
+        .btn-modal-action { flex: 1; padding: 11px; border: none; font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit; }
+        #btn-submit-arrive { background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); }
+        #btn-close-modal { background: rgba(255,255,255,0.1); color: #94a3b8; }
     </style>
 </head>
 <body>
 
-    <!-- 🚒 좌측 지휘관 배경 이미지 (PC 대형 모니터 전용 & 좌측 밀착) -->
+    <!-- 🚒 좌측 지휘관 캐릭터 -->
     <img id="bg-captain" src="captain.png" alt="지휘관 캐릭터" onerror="this.style.display='none'">
 
-    <!-- 좌측 상단: 초기화 버튼 + 심볼/소방서명 -->
+    <!-- 좌측 상단: 초기화 버튼 + 브랜딩 -->
     <div id="top-left-group">
         <button id="btn-clear-data">🔥 초기화</button>
         <div id="header-branding">
@@ -450,7 +403,7 @@
     <!-- 중앙 상단: 상태 바 -->
     <div id="status-board">지휘차 대기중</div>
 
-    <!-- 우측 상단: 한글 보고서 다운로드 + 화면 잠금 토글 -->
+    <!-- 우측 상단: 한글 보고서 + 잠금 모드 -->
     <div id="top-right-group">
         <button id="btn-download-hwp">📥 한글보고서</button>
         <button id="btn-lock-mode">🔓 수정 모드</button>
@@ -505,7 +458,7 @@
             <div class="log-scroll-area" id="log-container"></div>
         </div>
 
-        <!-- 3. 우측 패널: 현장 도착 현황 (좌: 총0대 / 중: 제목 / 우: 등록버튼) -->
+        <!-- 3. 우측 패널: 현장 도착 현황 -->
         <div class="panel-box" id="arrived-vehicles-panel">
             <div class="avp-header">
                 <span id="total-veh-badge">총 0대</span>
@@ -517,7 +470,6 @@
             </div>
         </div>
 
-        <!-- 4. 모바일 하단 여백 보장 전용 스페이서 -->
         <div id="mobile-bottom-spacer"></div>
     </div>
 
@@ -734,7 +686,7 @@
             URL.revokeObjectURL(link.href);
         });
 
-        // ⌨️ 입력창 터치 시 화면을 강제로 최상단 타임라인 뷰로 고정
+        // ⌨️ 모바일 키보드 포커스 최적화
         inputField.addEventListener('focus', () => {
             if (window.innerWidth <= 900) {
                 document.body.classList.add('mobile-typing');
@@ -750,7 +702,7 @@
             }
         });
 
-        // 🔒 화면 잠금(조회 전용) 토글 로직
+        // 🔒 화면 잠금 토글
         const lockBtn = document.getElementById('btn-lock-mode');
         let isLocked = false;
         lockBtn.addEventListener('click', () => {
@@ -779,7 +731,7 @@
             } else {
                 toggleBtn.innerText = "▲ 패널 접기";
                 if (window.innerWidth > 900) {
-                    mainContainer.style.bottom = "175px";
+                    mainContainer.style.bottom = "180px";
                 } else if (bottomSpacer) {
                     bottomSpacer.style.height = "185px";
                 }
@@ -817,7 +769,7 @@
                 }
             } else {
                 statusBoard.innerText = "지휘차 대기중";
-                statusBoard.style.backgroundColor = "#15803d";
+                statusBoard.style.backgroundColor = "rgba(22, 101, 52, 0.85)";
                 statusBoard.classList.remove('alert-level-1');
             }
         });
@@ -833,7 +785,6 @@
             arrivedVehicles = data ? data : [];
             renderArrivedVehicles();
             
-            // 🚒 동원 장비 수량 자동 연동
             if (arrivedVehicles.length > 0) {
                 const autoEqText = `소방 ${arrivedVehicles.length}대`;
                 const eqEl = document.getElementById('ov-equipment');
@@ -934,7 +885,7 @@
             document.getElementById('total-veh-badge').innerText = `총 ${totalCount}대`;
 
             if(totalCount === 0) { 
-                avpList.innerHTML = "<div style='text-align:center; padding-top:25px; color:#94a3b8;'>도착 차량 없음</div>"; 
+                avpList.innerHTML = "<div style='text-align:center; padding-top:30px; color:#64748b;'>도착 차량 없음</div>"; 
                 return; 
             }
 
@@ -1048,11 +999,11 @@
 
         document.getElementById('btn-wanjin').addEventListener('click', () => {
             if (isLocked) return;
-            saveStatusState("✅ 완진 (상황 종료)", "#15803d", false);
+            saveStatusState("✅ 완진 (상황 종료)", "rgba(22, 101, 52, 0.85)", false);
             addLog("완전 진화 및 상황 종료", "#4ade80");
         });
 
-        // 🔒 관리자 비밀번호(0426) 인증 초기화 로직
+        // 🔒 관리자 비밀번호(0426) 초기화
         const ADMIN_PIN = "0426"; 
         document.getElementById('btn-clear-data').addEventListener('click', () => {
             if (isLocked) return;

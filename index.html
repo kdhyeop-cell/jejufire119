@@ -20,7 +20,7 @@
             position: relative;
         }
 
-        /* 🚒 좌측 지휘관 배경 캐릭터 (패널 뒤로 완전히 빼서 z-index: 1 설정) */
+        /* 🚒 좌측 지휘관 배경 캐릭터 (패널 뒤 z-index: 1 배치) */
         #bg-captain {
             position: fixed;
             top: 50%;
@@ -28,7 +28,7 @@
             transform: translateY(-50%);
             height: 68vh;
             max-height: 620px;
-            z-index: 1; /* 패널(z-index: 10)의 뒤쪽에 배치하여 글씨나 입력창을 가리지 않음 */
+            z-index: 1;
             pointer-events: none;
             user-select: none;
             filter: drop-shadow(5px 0 15px rgba(0,0,0,0.7));
@@ -740,11 +740,20 @@
             statusRef.set({ text: text, color: color, isEmergency: emergencyFlag });
         }
 
+        // 🚒 수정된 소방차량 배치 명단
         const fireCenters = [
-            { center: "현장대응단", v: ["지휘차"] }, { center: "이도", v: ["펌프", "물탱크", "사다리", "조연", "구급"] }, { center: "삼도", v: ["펌프", "물탱크", "구급"] },
-            { center: "연동", v: ["펌프", "물탱크", "사다리", "구급"] }, { center: "오라", v: ["펌프", "물탱크", "구급"] }, { center: "항만", v: ["펌프", "화학", "구급"] },
-            { center: "외도", v: ["펌프", "물탱크", "무인파괴", "구급"] }, { center: "화북", v: ["펌프", "물탱크", "고가사다리", "구급"] }, { center: "아라", v: ["펌프", "물탱크", "구급"] },
-            { center: "노형", v: ["펌프", "물탱크", "구급"] }, { center: "구조대", v: ["구조차", "생활안전"] }
+            { center: "현장대응단", v: ["지휘차", "조사차"] },
+            { center: "이도", v: ["펌프", "물탱크", "조연", "소형사다리", "고가사다리", "특별구급", "음압구급"] },
+            { center: "삼도", v: ["펌프", "물탱크", "구급"] },
+            { center: "연동", v: ["펌프", "물탱크", "굴절", "구급"] },
+            { center: "오라", v: ["펌프", "물탱크", "구급"] },
+            { center: "항만", v: ["펌프", "화학", "구급"] },
+            { center: "추자", v: ["펌프", "구급"] },
+            { center: "화북", v: ["펌프", "물탱크", "굴절", "구급"] },
+            { center: "노형", v: ["펌프", "물탱크", "굴절", "구급"] },
+            { center: "외도", v: ["펌프", "물탱크", "무인파괴", "구급"] },
+            { center: "아라", v: ["펌프", "물탱크", "구급"] },
+            { center: "구조대", v: ["구조", "생활안전"] }
         ];
 
         const modalContainer = document.getElementById('center-list-container');

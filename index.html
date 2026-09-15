@@ -73,7 +73,7 @@
             position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
             color: #fff; font-size: 14px; font-weight: bold; text-align: center;
             background-color: #15803d; padding: 6px 14px;
-            border-radius: 8px; width: 45%; max-width: 300px;
+            border-radius: 8px; width: 44%; max-width: 300px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
             border: 1px solid rgba(255,255,255,0.15);
             letter-spacing: 0.5px;
@@ -230,7 +230,6 @@
             content: "" !important;
         }
         body.locked-mode #btn-top-add-veh,
-        body.locked-mode #btn-clear-data,
         body.locked-mode .quick-actions button,
         body.locked-mode .btn-send {
             pointer-events: none !important;
@@ -414,7 +413,7 @@
         #btn-close-modal { background: #475569; color: white; }
     </style>
 </head>
-<body>
+<body class="locked-mode">
 
     <!-- 🚒 좌측 지휘관 배경 이미지 (PC 대형 모니터 전용 & 좌측 밀착) -->
     <img id="bg-captain" src="captain.png" alt="지휘관 캐릭터" onerror="this.style.display='none'">
@@ -432,7 +431,7 @@
     <div id="status-board">지휘차 대기중</div>
 
     <!-- 우측 상단: 화면 잠금 토글 -->
-    <button id="btn-lock-mode">🔓 수정 모드</button>
+    <button id="btn-lock-mode" class="active-locked">🔒 관전 모드</button>
 
     <!-- 3분할 메인 레이아웃 -->
     <div id="main-container">
@@ -568,6 +567,35 @@
         let logsData = []; 
         let arrivedVehicles = [];
 
+        // 🔒 관리자 비밀번호 (0426)
+        const ADMIN_PIN = "0426"; 
+
+        // 🔒 초기 상태: 관전 모드(잠금) 활성화 및 비밀번호 인증 로직
+        const lockBtn = document.getElementById('btn-lock-mode');
+        let isLocked = true; // 기본 접속 시 잠김 상태
+
+        lockBtn.addEventListener('click', () => {
+            if (isLocked) {
+                const inputPin = prompt("수정 모드로 전환하려면 비밀번호(4자리)를 입력하세요:");
+                if (inputPin === null) return;
+                
+                if (inputPin === ADMIN_PIN) {
+                    isLocked = false;
+                    document.body.classList.remove('locked-mode');
+                    lockBtn.classList.remove('active-locked');
+                    lockBtn.innerText = "🔓 수정 모드";
+                    alert("✅ 수정 모드가 활성화되었습니다.");
+                } else {
+                    alert("❌ 비밀번호가 일치하지 않습니다.");
+                }
+            } else {
+                isLocked = true;
+                document.body.classList.add('locked-mode');
+                lockBtn.classList.add('active-locked');
+                lockBtn.innerText = "🔒 관전 모드";
+            }
+        });
+
         // ⌨️ 입력창 터치 시 화면을 강제로 최상단 타임라인 뷰로 고정
         inputField.addEventListener('focus', () => {
             if (window.innerWidth <= 900) {
@@ -581,22 +609,6 @@
                 setTimeout(() => {
                     document.body.classList.remove('mobile-typing');
                 }, 150);
-            }
-        });
-
-        // 🔒 화면 잠금(조회 전용) 토글 로직
-        const lockBtn = document.getElementById('btn-lock-mode');
-        let isLocked = false;
-        lockBtn.addEventListener('click', () => {
-            isLocked = !isLocked;
-            if (isLocked) {
-                document.body.classList.add('locked-mode');
-                lockBtn.classList.add('active-locked');
-                lockBtn.innerText = "🔒 화면 잠김";
-            } else {
-                document.body.classList.remove('locked-mode');
-                lockBtn.classList.remove('active-locked');
-                lockBtn.innerText = "🔓 수정 모드";
             }
         });
 
@@ -886,10 +898,8 @@
             addLog("완전 진화 및 상황 종료", "#4ade80");
         });
 
-        // 🔒 관리자 비밀번호(0426) 인증 초기화 로직
-        const ADMIN_PIN = "0426"; 
+        // 🔒 관리자 비밀번호(0426) 인증 초기화 로직 (잠금 상태와 무관하게 비밀번호 인증 후 즉시 초기화 가능)
         document.getElementById('btn-clear-data').addEventListener('click', () => {
-            if (isLocked) return;
             const inputPin = prompt("⚠️ 모든 현장 기록과 차량 현황이 영구 삭제됩니다.\n초기화 비밀번호(4자리)를 입력하세요:");
             
             if (inputPin === null) return; 

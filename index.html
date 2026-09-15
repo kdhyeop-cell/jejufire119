@@ -20,23 +20,23 @@
             position: relative;
         }
 
-        /* 🚒 좌측 지휘관 배경 캐릭터 (PC 모니터 전용 & 레이어 우선순위 보정) */
+        /* 🚒 좌측 지휘관 배경 캐릭터 (패널 뒤로 완전히 빼서 z-index: 1 설정) */
         #bg-captain {
             position: fixed;
             top: 50%;
-            left: -35px; /* 좌측으로 밀착하여 무전기 든 팔 부분이 살짝 걸치도록 배치 */
+            left: -40px;
             transform: translateY(-50%);
             height: 68vh;
             max-height: 620px;
-            z-index: 15; /* 패널(z-index: 10)보다 위에 배치하여 검은 패널에 가려지지 않음 */
-            pointer-events: none; /* 클릭/터치 통과 */
+            z-index: 1; /* 패널(z-index: 10)의 뒤쪽에 배치하여 글씨나 입력창을 가리지 않음 */
+            pointer-events: none;
             user-select: none;
             filter: drop-shadow(5px 0 15px rgba(0,0,0,0.7));
             opacity: 0.95;
             display: block;
         }
 
-        /* 스마트폰 및 태블릿 세로 화면(1024px 이하)에서만 숨김 */
+        /* 스마트폰 및 태블릿 세로 화면(1024px 이하)에서는 여백 부족으로 숨김 */
         @media screen and (max-width: 1024px) {
             #bg-captain {
                 display: none !important;
@@ -418,7 +418,7 @@
 </head>
 <body class="locked-mode">
 
-    <!-- 🚒 좌측 지휘관 배경 이미지 -->
+    <!-- 🚒 좌측 지휘관 배경 이미지 (패널 뒤 z-index: 1 배치) -->
     <img id="bg-captain" src="captain.png" alt="지휘관 캐릭터" onerror="this.style.display='none'">
 
     <!-- 좌측 상단: 초기화 버튼 + 심볼/소방서명 -->
@@ -588,17 +588,14 @@
                 lockBtn.innerText = "🔓 수정 모드";
             }
 
-            // 모바일 터치 시 가상 키보드가 열리지 않도록 readOnly 속성 제어
             document.querySelectorAll('input, textarea').forEach(el => {
                 el.readOnly = locked;
             });
 
-            // 조작 버튼 비활성화
             document.querySelectorAll('.quick-actions button, #btn-top-add-veh, #btn-send').forEach(btn => {
                 btn.disabled = locked;
             });
 
-            // 타임라인 시간 수정 가능 여부 제어
             document.querySelectorAll('.edit-time').forEach(el => {
                 el.setAttribute('contenteditable', locked ? 'false' : 'true');
             });
@@ -623,7 +620,7 @@
             }
         });
 
-        // ⌨️ 입력창 포커스 제어 (잠금 상태에서는 모바일 키보드 팝업 차단)
+        // ⌨️ 입력창 포커스 제어
         inputField.addEventListener('focus', () => {
             if (isLocked) {
                 inputField.blur();

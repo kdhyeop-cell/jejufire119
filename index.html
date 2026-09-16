@@ -797,16 +797,28 @@
             renderLogs();
         });
 
+        // 🚒 동원 장비 세부 차종별 수량 자동 연동
         arrivedRef.on('value', (snapshot) => {
             const data = snapshot.val();
             arrivedVehicles = data ? data : [];
             renderArrivedVehicles();
             
-            if (!isLocked && arrivedVehicles.length > 0) {
-                const autoEqText = `소방 ${arrivedVehicles.length}대`;
+            if (!isLocked) {
                 const eqEl = document.getElementById('ov-equipment');
-                if (!eqEl.value || eqEl.value.startsWith('소방 ') || eqEl.value === '조사중') {
-                    overviewRef.child('ov-equipment').set(autoEqText);
+                if (arrivedVehicles.length > 0) {
+                    const grouped = {};
+                    arrivedVehicles.forEach(fullName => {
+                        const parts = fullName.split(' ');
+                        const vehType = parts[1] || parts[0];
+                        grouped[vehType] = (grouped[vehType] || 0) + 1;
+                    });
+                    const details = Object.entries(grouped).map(([type, count]) => `${type} ${count}`).join(', ');
+                    const autoEqText = `소방 총 ${arrivedVehicles.length}대(${details})`;
+                    if (!eqEl.value || eqEl.value.startsWith('소방') || eqEl.value === '조사중') {
+                        overviewRef.child('ov-equipment').set(autoEqText);
+                    }
+                } else if (eqEl && (eqEl.value.startsWith('소방 총') || eqEl.value.startsWith('소방 '))) {
+                    overviewRef.child('ov-equipment').set('');
                 }
             }
         });
@@ -825,7 +837,6 @@
             });
         }
 
-        // 시간 수정 시 기존 로그의 날짜를 보존하여 타임스탬프 갱신
         function updateLogTime(id, newTime) {
             const updates = { time: newTime };
             const parts = newTime.split(':').map(Number);
@@ -1004,14 +1015,12 @@
             let lastDateStr = null;
 
             sortedLogs.slice().reverse().forEach(log => {
-                // 로그의 타임스탬프에서 일자 추출
                 const ts = log.timestamp || parseInt(log.id);
                 if (ts && !isNaN(ts)) {
                     const d = new Date(ts);
                     const days = ['일', '월', '화', '수', '목', '금', '토'];
                     const dateStr = `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.(${days[d.getDay()]})`;
                     
-                    // 자정 경과 등 날짜 변경 감지 시 구분선 렌더링
                     if (dateStr !== lastDateStr) {
                         lastDateStr = dateStr;
                         const divider = document.createElement('div');

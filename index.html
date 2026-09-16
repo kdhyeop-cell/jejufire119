@@ -135,7 +135,7 @@
             letter-spacing: 0.6px; flex-shrink: 0;
         }
 
-        /* 1. 좌측: 현장 정보 요약 패널 (높이 가변 대응 및 간격 균등 분배) */
+        /* 1. 좌측: 현장 정보 요약 패널 */
         #overview-panel { border-color: rgba(13, 148, 136, 0.45); }
         #overview-panel .panel-header { 
             background: linear-gradient(180deg, rgba(17, 94, 89, 0.85), rgba(15, 23, 42, 0.9)); 
@@ -149,7 +149,7 @@
             font-size: 12px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* 패널 접힘 시 빈 공간 없이 위아래 균등 분배 */
+            justify-content: space-between;
         }
         .ov-section-title { 
             font-size: 11.5px; font-weight: 800; color: #2dd4bf; margin: 4px 0 3px 0; 
@@ -167,7 +167,8 @@
         }
         .ov-input:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 8px rgba(45, 212, 191, 0.25); background: #0c121e; }
 
-        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; }
+        /* 기상 상황 5분할 그리드 */
+        .weather-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; }
         .weather-box { 
             background: #090d16; border: 1px solid rgba(255, 255, 255, 0.08); 
             border-radius: 6px; padding: 5px 2px; text-align: center; 
@@ -308,7 +309,7 @@
                 height: auto !important; 
                 max-height: none !important; 
                 padding: 12px !important; 
-                display: block !important; /* 모바일에서는 일반 블록 흐름 유지 */
+                display: block !important;
             }
             #overview-panel .ov-row { margin-bottom: 5px !important; }
             #overview-panel .ov-section-title { margin: 8px 0 4px 0 !important; }
@@ -462,6 +463,7 @@
                 <div class="ov-row"><span class="ov-label">동원인원</span><textarea class="ov-input" id="ov-manpower" placeholder="소방 00명 / 유관 0명" readonly></textarea></div>
                 <div class="ov-row"><span class="ov-label">동원장비</span><textarea class="ov-input" id="ov-equipment" placeholder="소방 00대 / 유관 0대" readonly></textarea></div>
 
+                <!-- 🌤️ 기상 상황 (풍향 추가 5분할) -->
                 <div class="ov-section-title">🌤️ 기상 상황</div>
                 <div class="weather-grid">
                     <div class="weather-box">
@@ -475,6 +477,10 @@
                     <div class="weather-box">
                         <div class="weather-title">날씨</div>
                         <input type="text" class="weather-input" id="wx-condition" placeholder="맑음" readonly>
+                    </div>
+                    <div class="weather-box">
+                        <div class="weather-title">풍향</div>
+                        <input type="text" class="weather-input" id="wx-dir" placeholder="북서" readonly>
                     </div>
                     <div class="weather-box">
                         <div class="weather-title">풍속</div>
@@ -541,7 +547,7 @@
             <div id="center-list-container"></div>
             <div class="modal-footer">
                 <button class="btn-modal-action" id="btn-submit-arrive">선택 완료 (일괄 등록)</button>
-                <button class="btn-modal-action" id="btn-close-modal">닫기</button>
+                <button class="btn-close-modal" id="btn-close-modal">닫기</button>
             </div>
         </div>
     </div>
@@ -665,7 +671,8 @@
             }
         });
 
-        const overviewFields = ['ov-time', 'ov-place', 'ov-struct', 'ov-owner', 'ov-cause', 'ov-casualty', 'ov-property', 'ov-manpower', 'ov-equipment', 'wx-temp', 'wx-humidity', 'wx-condition', 'wx-wind'];
+        // wx-dir 추가 완료
+        const overviewFields = ['ov-time', 'ov-place', 'ov-struct', 'ov-owner', 'ov-cause', 'ov-casualty', 'ov-property', 'ov-manpower', 'ov-equipment', 'wx-temp', 'wx-humidity', 'wx-condition', 'wx-dir', 'wx-wind'];
         
         overviewFields.forEach(fieldId => {
             const el = document.getElementById(fieldId);

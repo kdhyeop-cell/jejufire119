@@ -135,31 +135,39 @@
             letter-spacing: 0.6px; flex-shrink: 0;
         }
 
-        /* 1. 좌측: 현장 정보 요약 패널 */
+        /* 1. 좌측: 현장 정보 요약 패널 (높이 가변 대응 및 간격 균등 분배) */
         #overview-panel { border-color: rgba(13, 148, 136, 0.45); }
         #overview-panel .panel-header { 
             background: linear-gradient(180deg, rgba(17, 94, 89, 0.85), rgba(15, 23, 42, 0.9)); 
             border-bottom: 1px solid rgba(13, 148, 136, 0.45); 
             color: #5eead4;
         }
-        .overview-content { flex: 1; overflow-y: auto; padding: 12px; font-size: 12px; }
+        .overview-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 12px; 
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 패널 접힘 시 빈 공간 없이 위아래 균등 분배 */
+        }
         .ov-section-title { 
-            font-size: 11.5px; font-weight: 800; color: #2dd4bf; margin: 8px 0 5px 0; 
-            border-bottom: 1px solid rgba(45, 212, 191, 0.2); padding-bottom: 3px; 
-            letter-spacing: 0.3px;
+            font-size: 11.5px; font-weight: 800; color: #2dd4bf; margin: 4px 0 3px 0; 
+            border-bottom: 1px solid rgba(45, 212, 191, 0.2); padding-bottom: 2px; 
+            letter-spacing: 0.3px; flex-shrink: 0;
         }
         .ov-section-title:first-child { margin-top: 0; }
-        .ov-row { display: flex; align-items: stretch; margin-bottom: 6px; gap: 6px; }
+        .ov-row { display: flex; align-items: stretch; margin-bottom: 3px; gap: 6px; flex-shrink: 0; }
         .ov-label { width: 66px; color: #94a3b8; font-weight: 700; font-size: 11.5px; flex-shrink: 0; display: flex; align-items: center; }
         .ov-input { 
             flex: 1; background: #090d16; border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; 
-            padding: 6px 8px; border-radius: 6px; font-size: 12px; 
-            resize: vertical; min-height: 28px; max-height: 75px;
+            padding: 5px 8px; border-radius: 6px; font-size: 12px; 
+            resize: vertical; min-height: 26px; max-height: 75px;
             font-family: inherit; line-height: 1.35; transition: all 0.2s;
         }
         .ov-input:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 8px rgba(45, 212, 191, 0.25); background: #0c121e; }
 
-        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 6px; margin-bottom: 2px; }
+        .weather-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; }
         .weather-box { 
             background: #090d16; border: 1px solid rgba(255, 255, 255, 0.08); 
             border-radius: 6px; padding: 5px 2px; text-align: center; 
@@ -295,7 +303,15 @@
             #arrived-vehicles-panel { order: 2; height: auto !important; flex: none; overflow: hidden !important; }
             #arrived-vehicles-panel .avp-content, #arrived-vehicles-panel .avp-list-scroll { overflow: visible !important; height: auto !important; max-height: none !important; }
             #overview-panel { order: 3; height: auto !important; flex: none; overflow: hidden !important; border: 1px solid rgba(13, 148, 136, 0.45) !important; border-radius: 10px !important; }
-            #overview-panel .overview-content { overflow: visible !important; height: auto !important; max-height: none !important; padding: 12px !important; }
+            #overview-panel .overview-content { 
+                overflow: visible !important; 
+                height: auto !important; 
+                max-height: none !important; 
+                padding: 12px !important; 
+                display: block !important; /* 모바일에서는 일반 블록 흐름 유지 */
+            }
+            #overview-panel .ov-row { margin-bottom: 5px !important; }
+            #overview-panel .ov-section-title { margin: 8px 0 4px 0 !important; }
             #mobile-bottom-spacer { display: block !important; order: 4; height: 185px; flex-shrink: 0; width: 100%; pointer-events: none; }
             
             #header-branding span { display: none; } 

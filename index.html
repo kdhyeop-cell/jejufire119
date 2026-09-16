@@ -180,7 +180,7 @@
         }
         .weather-input:focus { outline: none; background: rgba(255,255,255,0.06); border-radius: 4px; }
 
-        /* 2. 가운데: 타임라인 패널 (일지 복사 및 카운트 헤더) */
+        /* 2. 가운데: 타임라인 패널 */
         #log-panel { border-color: rgba(220, 38, 38, 0.45); }
         .log-panel-header { 
             background: linear-gradient(180deg, rgba(153, 27, 27, 0.85), rgba(15, 23, 42, 0.9)); 
@@ -423,8 +423,22 @@
         .btn-mini-action { padding: 5px 10px; font-size: 11px; font-weight: 700; border: none; border-radius: 5px; cursor: pointer; }
         .btn-mini-submit { background: #0284c7; color: white; }
         .btn-mini-close { background: #334155; color: white; }
+        
         .center-group { margin-bottom: 12px; }
-        .center-title { font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 5px; }
+        /* 센터 헤더 및 전체선택 토글 버튼 스타일 */
+        .center-group-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+        }
+        .center-title { font-size: 13px; font-weight: 800; color: #fbbf24; }
+        .btn-toggle-center {
+            background: rgba(30, 41, 59, 0.85); color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 4px;
+            font-size: 10.5px; font-weight: 700; padding: 2px 7px; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-toggle-center:hover { background: #0284c7; color: #fff; border-color: #38bdf8; }
+        .btn-toggle-center:active { filter: brightness(0.9); }
+
         .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .veh-check-label { 
             display: flex; align-items: center; justify-content: center; gap: 5px;
@@ -508,7 +522,7 @@
             </div>
         </div>
 
-        <!-- 2. 가운데 패널: 타임라인 (상황일지 복사 및 카운트 배지 포함) -->
+        <!-- 2. 가운데 패널: 타임라인 -->
         <div class="panel-box" id="log-panel">
             <div class="log-panel-header">
                 <span id="total-log-badge">기록 0건</span>
@@ -633,7 +647,6 @@
             });
         }
 
-        // 페이지 진입 시 관전 모드 적용
         applyLockMode(true);
 
         lockBtn.addEventListener('click', () => {
@@ -691,7 +704,6 @@
             }
         });
 
-        // 2. 디바운스 유틸리티 함수 (네트워크 부하 방지)
         function debounce(func, delay = 300) {
             let timer;
             return function (...args) {
@@ -760,7 +772,6 @@
             }
         });
 
-        // 1. 타임스탬프 정렬 보완 적용
         function addLog(message, color = "#f8fafc") {
             const now = new Date();
             const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
@@ -796,6 +807,7 @@
             statusRef.set({ text: text, color: color, isEmergency: emergencyFlag });
         }
 
+        // 🚒 수정된 소방차량 배치 명단
         const fireCenters = [
             { center: "현장대응단", v: ["지휘차", "조사차"] },
             { center: "이도", v: ["펌프", "물탱크", "조연", "소형사다리", "고가사다리", "특별구급", "음압구급"] },
@@ -811,9 +823,16 @@
             { center: "구조대", v: ["구조", "생활안전"] }
         ];
 
+        // 2. 센터별 전체선택 토글 버튼 생성
         const modalContainer = document.getElementById('center-list-container');
         fireCenters.forEach(fc => {
-            let html = `<div class="center-group"><div class="center-title">${fc.center}</div><div class="veh-checkbox-grid">`;
+            let html = `
+                <div class="center-group">
+                    <div class="center-group-header">
+                        <span class="center-title">${fc.center}</span>
+                        <button type="button" class="btn-toggle-center">전체선택</button>
+                    </div>
+                    <div class="veh-checkbox-grid">`;
             fc.v.forEach(veh => {
                 const fullName = `${fc.center} ${veh}`;
                 html += `
@@ -827,9 +846,33 @@
             modalContainer.innerHTML += html;
         });
 
+        // 센터별 전체선택 / 전체해제 클릭 이벤트 연결
+        document.querySelectorAll('.btn-toggle-center').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const group = this.closest('.center-group');
+                const checkboxes = group.querySelectorAll('.veh-checkbox');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                checkboxes.forEach(cb => cb.checked = !allChecked);
+                this.innerText = allChecked ? "전체선택" : "전체해제";
+            });
+        });
+
+        // 개별 체크박스 변경 시 버튼 문구 동기화
+        document.querySelectorAll('.veh-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const group = this.closest('.center-group');
+                const btn = group.querySelector('.btn-toggle-center');
+                const checkboxes = group.querySelectorAll('.veh-checkbox');
+                const allChecked = Array.from(checkboxes).every(c => c.checked);
+                if (btn) btn.innerText = allChecked ? "전체해제" : "전체선택";
+            });
+        });
+
         const openModalFunc = () => {
             if (isLocked) return;
             document.querySelectorAll('.veh-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.btn-toggle-center').forEach(btn => btn.innerText = "전체선택");
             document.getElementById('vehicle-modal').style.display = 'flex';
         };
 
@@ -905,7 +948,6 @@
             });
         }
 
-        // 1. 타임라인 타임스탬프 기준 완벽 정렬 렌더링
         function renderLogs() {
             logContainer.innerHTML = ""; 
 
@@ -947,7 +989,6 @@
             });
         }
 
-        // 3. 일지 텍스트 복사 로직 (국가화재정보시스템 보고서 포맷)
         function copyReport() {
             const getValue = (id) => (document.getElementById(id) ? document.getElementById(id).value.trim() : "");
 

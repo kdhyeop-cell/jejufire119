@@ -61,11 +61,12 @@
         .auth-input {
             width: 100%; padding: 12px; font-size: 16px; text-align: center;
             letter-spacing: 4px; font-weight: 800;
-            background: #090d16; border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; color: #fff; margin-bottom: 12px;
+            background: #090d16 !important; border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 8px; color: #fff !important; margin-bottom: 12px;
             outline: none; transition: border-color 0.2s; font-family: inherit;
+            cursor: text !important; user-select: auto !important; -webkit-user-select: auto !important;
         }
-        .auth-input:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+        .auth-input:focus { border-color: #38bdf8 !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important; }
         .btn-auth-submit {
             width: 100%; padding: 12px; font-size: 13px; font-weight: 800;
             background: linear-gradient(135deg, #0284c7, #0369a1);
@@ -366,8 +367,8 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* 🔒 화면 잠금(조회 전용) 모드 스타일 */
-        body.locked-mode input,
+        /* 🔒 화면 잠금(조회 전용) 모드 스타일 (게이트 입력창 제외 처리) */
+        body.locked-mode input:not(#gate-pin-input),
         body.locked-mode textarea,
         body.locked-mode .edit-time {
             user-select: none !important;
@@ -719,7 +720,7 @@
         let logsData = []; 
         let arrivedVehicles = [];
 
-        // 🔒 비밀번호 설정 (필요시 각 번호 수정 가능)
+        // 🔒 비밀번호 설정
         const VIEW_PIN = "0426";   // 관전 모드 입장 비밀번호
         const ADMIN_PIN = "0426";  // 수정 모드 전환 및 초기화 비밀번호
 
@@ -746,7 +747,6 @@
             if (e.key === 'Enter') checkGateAuth();
         });
 
-        // 세션 스토리지 확인 (브라우저 탭 유지 시 재인증 생략)
         if (sessionStorage.getItem('jejuFireAccessGranted') === 'true') {
             authGate.style.display = 'none';
         } else {
@@ -757,6 +757,7 @@
         const lockBtn = document.getElementById('btn-lock-mode');
         let isLocked = true;
 
+        // 🔒 gate-pin-input을 제외한 나머지 입력창만 잠금 처리
         function applyLockMode(locked) {
             isLocked = locked;
             if (locked) {
@@ -769,7 +770,7 @@
                 lockBtn.innerText = "🔓 수정 모드";
             }
 
-            document.querySelectorAll('input, textarea').forEach(el => {
+            document.querySelectorAll('input:not(#gate-pin-input), textarea').forEach(el => {
                 el.readOnly = locked;
             });
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>제주소방서 현장대응단 - 실시간 지휘 상황판</title>
+    <title>제주소방서 현장대응단 - 실시간 상황판</title>
     
     <!-- 최신 시스템 폰트 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
@@ -16,11 +16,11 @@
         * { box-sizing: border-box; }
         body { 
             margin: 0; padding: 0; 
-            background-color: #070b13; 
+            background-color: #0f172a; 
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(14, 116, 144, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(30, 58, 138, 0.08) 0%, transparent 40%);
-            color: #f1f5f9; 
+                radial-gradient(circle at 15% 15%, rgba(30, 58, 138, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(14, 116, 144, 0.15) 0%, transparent 45%);
+            color: #f8fafc; 
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif; 
             min-height: 100vh; overflow-x: hidden;
             position: relative;
@@ -30,7 +30,7 @@
         /* 🔒 외부인 차단 전체화면 블러 보안 게이트 스타일 */
         #auth-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(7, 11, 19, 0.88);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             z-index: 10000;
@@ -38,13 +38,13 @@
             padding: 20px;
         }
         .auth-card {
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 14px;
             padding: 28px 24px;
             width: 100%; max-width: 360px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             animation: gate-appear 0.25s ease-out;
         }
         @keyframes gate-appear {
@@ -61,8 +61,8 @@
         .auth-input {
             width: 100%; padding: 12px; font-size: 16px; text-align: center;
             letter-spacing: 4px; font-weight: 800;
-            background: #090d16 !important; border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 8px; color: #fff !important; margin-bottom: 12px;
+            background: #0f172a !important; border: 1px solid #334155 !important;
+            border-radius: 8px; color: #f8fafc !important; margin-bottom: 12px;
             outline: none; transition: border-color 0.2s; font-family: inherit;
             cursor: text !important; user-select: auto !important; -webkit-user-select: auto !important;
         }
@@ -90,7 +90,7 @@
             z-index: 1;
             pointer-events: none;
             user-select: none;
-            filter: drop-shadow(8px 0 20px rgba(0, 0, 0, 0.9));
+            filter: drop-shadow(8px 0 20px rgba(0, 0, 0, 0.6));
             opacity: 0.95;
             display: block;
         }
@@ -113,7 +113,7 @@
             background: linear-gradient(135deg, #7f1d1d, #991b1b); 
             color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);
             border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 700;
-            flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
             transition: all 0.2s ease;
         }
         #btn-clear-data:hover { 
@@ -125,9 +125,9 @@
         /* 심볼 및 소방서명 브랜딩 영역 */
         #header-branding {
             display: flex; align-items: center; gap: 7px;
-            background: rgba(15, 23, 42, 0.85); padding: 4px 10px; border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            flex-shrink: 0; backdrop-filter: blur(8px);
+            background: #1e293b; padding: 4px 10px; border-radius: 6px;
+            border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
         #header-branding img { width: 20px; height: 20px; object-fit: contain; display: block; }
         #header-branding span { color: #f8fafc; font-size: 11.5px; font-weight: 800; white-space: nowrap; letter-spacing: 0.3px; }
@@ -138,7 +138,7 @@
             color: #fff; font-size: 13.5px; font-weight: 800; text-align: center;
             background-color: #15803d; padding: 6px 18px;
             border-radius: 20px; width: 44%; max-width: 320px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.25); 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25); 
             z-index: 100;
             border: 1px solid rgba(255,255,255,0.2);
             letter-spacing: 0.5px;
@@ -154,9 +154,9 @@
         /* 화면 잠금 / 조회 모드 토글 버튼 */
         #btn-lock-mode {
             position: fixed; top: 10px; right: 10px; padding: 5px 12px;
-            background: rgba(30, 41, 59, 0.9); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);
+            background: #1e293b; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);
             border-radius: 6px; font-size: 11px; cursor: pointer; z-index: 110; font-weight: 800;
-            display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             transition: all 0.2s;
         }
         #btn-lock-mode:hover { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
@@ -175,11 +175,11 @@
 
         .panel-box {
             flex: 1; 
-            background: #0f172a; border-radius: 12px;
+            background: #1e293b; border-radius: 12px;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
             min-width: 0;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #334155;
         }
 
         .panel-header {
@@ -188,10 +188,10 @@
         }
 
         /* 1. 좌측: 현장 정보 요약 패널 */
-        #overview-panel { border-color: rgba(13, 148, 136, 0.45); }
+        #overview-panel { border-color: rgba(13, 148, 136, 0.6); }
         #overview-panel .panel-header { 
-            background: linear-gradient(180deg, rgba(17, 94, 89, 0.85), rgba(15, 23, 42, 0.9)); 
-            border-bottom: 1px solid rgba(13, 148, 136, 0.45); 
+            background: linear-gradient(180deg, #115e59, #0f766e); 
+            border-bottom: 1px solid rgba(13, 148, 136, 0.6); 
             color: #5eead4;
         }
         .overview-content { 
@@ -205,24 +205,24 @@
         }
         .ov-section-title { 
             font-size: 11.5px; font-weight: 800; color: #2dd4bf; margin: 4px 0 3px 0; 
-            border-bottom: 1px solid rgba(45, 212, 191, 0.2); padding-bottom: 2px; 
+            border-bottom: 1px solid rgba(45, 212, 191, 0.25); padding-bottom: 2px; 
             letter-spacing: 0.3px; flex-shrink: 0;
         }
         .ov-section-title:first-child { margin-top: 0; }
         .ov-row { display: flex; align-items: stretch; margin-bottom: 3px; gap: 6px; flex-shrink: 0; }
         .ov-label { width: 66px; color: #94a3b8; font-weight: 700; font-size: 11.5px; flex-shrink: 0; display: flex; align-items: center; }
         .ov-input { 
-            flex: 1; background: #090d16; border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; 
+            flex: 1; background: #0f172a; border: 1px solid #334155; color: #f8fafc; 
             padding: 5px 8px; border-radius: 6px; font-size: 12px; 
             resize: vertical; min-height: 26px; max-height: 75px;
             font-family: inherit; line-height: 1.35; transition: all 0.2s;
         }
-        .ov-input:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 8px rgba(45, 212, 191, 0.25); background: #0c121e; }
+        .ov-input:focus { outline: none; border-color: #2dd4bf; box-shadow: 0 0 8px rgba(45, 212, 191, 0.25); background: #131d2e; }
 
         /* 기상 상황 5분할 그리드 */
         .weather-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 4px; margin-bottom: 2px; flex-shrink: 0; }
         .weather-box { 
-            background: #090d16; border: 1px solid rgba(255, 255, 255, 0.08); 
+            background: #0f172a; border: 1px solid #334155; 
             border-radius: 6px; padding: 5px 2px; text-align: center; 
         }
         .weather-title { font-size: 10px; color: #94a3b8; margin-bottom: 2px; font-weight: 600; }
@@ -233,10 +233,10 @@
         .weather-input:focus { outline: none; background: rgba(255,255,255,0.06); border-radius: 4px; }
 
         /* 2. 가운데: 타임라인 패널 */
-        #log-panel { border-color: rgba(220, 38, 38, 0.45); }
+        #log-panel { border-color: rgba(220, 38, 38, 0.6); }
         .log-panel-header { 
-            background: linear-gradient(180deg, rgba(153, 27, 27, 0.85), rgba(15, 23, 42, 0.9)); 
-            border-bottom: 1px solid rgba(220, 38, 38, 0.45); 
+            background: linear-gradient(180deg, #991b1b, #7f1d1d); 
+            border-bottom: 1px solid rgba(220, 38, 38, 0.6); 
             color: #fca5a5;
             padding: 8px 10px;
             font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
@@ -244,8 +244,8 @@
             flex-shrink: 0; gap: 6px;
         }
         #total-log-badge {
-            background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; padding: 3px 8px;
-            border-radius: 12px; font-size: 11px; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.35);
+            background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 3px 8px;
+            border-radius: 12px; font-size: 11px; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.4);
             white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums;
         }
         .log-header-title { text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 800; }
@@ -276,9 +276,9 @@
             background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.45), transparent);
         }
         .timeline-date-badge {
-            background: rgba(153, 27, 27, 0.3);
+            background: rgba(153, 27, 27, 0.35);
             color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            border: 1px solid rgba(239, 68, 68, 0.45);
             border-radius: 12px;
             padding: 2px 10px;
             font-size: 11px;
@@ -291,11 +291,11 @@
 
         .log-entry { 
             display: flex; justify-content: space-between; align-items: flex-start; 
-            margin-bottom: 7px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 6px; 
+            margin-bottom: 7px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 6px; 
             font-size: 12px; gap: 8px; border-radius: 4px; padding: 4px 6px;
             transition: background 0.15s;
         }
-        .log-entry:hover { background: rgba(255, 255, 255, 0.02); }
+        .log-entry:hover { background: rgba(255, 255, 255, 0.03); }
         .log-content { flex: 1; display: flex; align-items: flex-start; gap: 8px; }
         .log-time { 
             color: #f87171; font-weight: 800; font-size: 12px; 
@@ -316,23 +316,23 @@
         }
         
         .btn-delete-log { 
-            background: rgba(127, 29, 29, 0.3); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); 
+            background: rgba(127, 29, 29, 0.35); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); 
             border-radius: 4px; cursor: pointer; font-size: 10px; padding: 2px 6px; 
             margin-left: 4px; white-space: nowrap; flex-shrink: 0; transition: all 0.15s;
         }
         .btn-delete-log:hover { background: #b91c1c; color: white; border-color: #ef4444; }
 
         /* 3. 우측: 현장 도착 현황 패널 */
-        #arrived-vehicles-panel { border-color: rgba(29, 78, 216, 0.45); }
+        #arrived-vehicles-panel { border-color: rgba(29, 78, 216, 0.6); }
         .avp-header { 
-            background: linear-gradient(180deg, rgba(30, 64, 175, 0.85), rgba(15, 23, 42, 0.9)); 
+            background: linear-gradient(180deg, #1d4ed8, #1e40af); 
             color: #93c5fd; padding: 9px 12px; 
             font-weight: 800; font-size: 13px; letter-spacing: 0.5px; 
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid rgba(29, 78, 216, 0.45); flex-shrink: 0; gap: 6px;
+            border-bottom: 1px solid rgba(29, 78, 216, 0.6); flex-shrink: 0; gap: 6px;
         }
         #total-veh-badge {
-            background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; padding: 3px 8px;
+            background-color: rgba(0, 0, 0, 0.3); color: #fbbf24; padding: 3px 8px;
             border-radius: 12px; font-size: 11px; font-weight: 800; border: 1px solid rgba(251, 191, 36, 0.35);
             white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums;
         }
@@ -346,10 +346,10 @@
         #btn-top-add-veh:hover { filter: brightness(1.15); transform: translateY(-1px); }
         .avp-content { flex: 1; overflow-y: auto; padding: 12px; font-size: 12px; display: flex; flex-direction: column; }
         .avp-list-scroll { flex: 1; overflow-y: auto; }
-        .avp-category { font-weight: 800; color: #fbbf24; margin-top: 6px; border-bottom: 1px solid rgba(251, 191, 36, 0.2); padding-bottom: 3px; font-size: 12px; }
+        .avp-category { font-weight: 800; color: #fbbf24; margin-top: 6px; border-bottom: 1px solid rgba(251, 191, 36, 0.25); padding-bottom: 3px; font-size: 12px; }
         .avp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; margin-bottom: 10px; }
         .avp-item { 
-            background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; 
+            background: #0f172a; border: 1px solid #334155; border-radius: 6px; 
             padding: 6px 3px; text-align: center; color: #38bdf8; font-size: 11.5px; font-weight: 700; 
             cursor: pointer; transition: all 0.15s ease; position: relative;
         }
@@ -367,21 +367,22 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* 🔒 화면 잠금(조회 전용) 모드 스타일 (게이트 입력창 제외 처리) */
+        /* 🔒 화면 잠금(조회 전용) 모드 스타일 */
         body.locked-mode input:not(#gate-pin-input),
         body.locked-mode textarea,
         body.locked-mode .edit-time {
             user-select: none !important;
-            background-color: rgba(15, 23, 42, 0.4) !important;
-            border-color: rgba(255, 255, 255, 0.04) !important;
+            background-color: rgba(15, 23, 42, 0.5) !important;
+            border-color: #1e293b !important;
+            color: #94a3b8 !important;
             cursor: default !important;
             box-shadow: none !important;
         }
         body.locked-mode .btn-delete-log { display: none !important; }
         body.locked-mode .avp-item { cursor: default !important; }
         body.locked-mode .avp-item:hover {
-            background-color: #1e293b !important;
-            border-color: rgba(255, 255, 255, 0.08) !important;
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
             color: #38bdf8 !important;
             transform: none !important;
             box-shadow: none !important;
@@ -413,7 +414,7 @@
             #log-panel .log-scroll-area { flex: 1; overflow-y: auto !important; }
             #arrived-vehicles-panel { order: 2; height: auto !important; flex: none; overflow: hidden !important; }
             #arrived-vehicles-panel .avp-content, #arrived-vehicles-panel .avp-list-scroll { overflow: visible !important; height: auto !important; max-height: none !important; }
-            #overview-panel { order: 3; height: auto !important; flex: none; overflow: hidden !important; border: 1px solid rgba(13, 148, 136, 0.45) !important; border-radius: 10px !important; }
+            #overview-panel { order: 3; height: auto !important; flex: none; overflow: hidden !important; border: 1px solid rgba(13, 148, 136, 0.6) !important; border-radius: 10px !important; }
             #overview-panel .overview-content { 
                 overflow: visible !important; 
                 height: auto !important; 
@@ -445,10 +446,9 @@
         /* 하단 제어 패널 */
         #input-panel {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 168px;
-            background: rgba(15, 23, 42, 0.95); padding: 8px 12px 10px 12px; box-sizing: border-box;
-            border-top: 1px solid rgba(255, 255, 255, 0.1); z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 7px;
-            box-shadow: 0 -6px 20px rgba(0,0,0,0.6);
-            backdrop-filter: blur(12px);
+            background: #1e293b; padding: 8px 12px 10px 12px; box-sizing: border-box;
+            border-top: 1px solid #334155; z-index: 100; display: flex; flex-direction: column; justify-content: center; gap: 7px;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
             transition: height 0.2s ease, padding 0.2s ease;
         }
         #input-panel.minimized { height: 44px; justify-content: flex-start; }
@@ -459,7 +459,7 @@
         }
         .panel-toggle-title { font-size: 11px; color: #94a3b8; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         #btn-toggle-panel {
-            background: #1e293b; color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px;
+            background: #0f172a; color: #f8fafc; border: 1px solid #334155; border-radius: 5px;
             padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
             transition: all 0.15s;
         }
@@ -478,18 +478,18 @@
         #btn-dispatch { background: linear-gradient(135deg, #d97706, #b45309); }      
         #btn-arrive-action { background: linear-gradient(135deg, #0ea5e9, #0284c7); } 
         #btn-alert { background: linear-gradient(135deg, #dc2626, #b91c1c); }         
-        #btn-chief { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }         
-        #btn-hq { background: linear-gradient(135deg, #ec4899, #db2777); }            
-        #btn-chojin { background: linear-gradient(135deg, #f59e0b, #d97706); }        
-        #btn-wanjin { background: linear-gradient(135deg, #10b981, #059669); }        
+        #btn-chief { background: linear-gradient(135deg, #7c3aed, #6d28d9); }         
+        #btn-hq { background: linear-gradient(135deg, #db2777, #be185d); }            
+        #btn-chojin { background: linear-gradient(135deg, #ea580c, #c2410c); }        
+        #btn-wanjin { background: linear-gradient(135deg, #16a34a, #15803d); }        
 
         .input-row { display: flex; gap: 8px; width: 100%; max-width: 880px; margin: 0 auto; }
         input[type="text"] { 
-            flex-grow: 1; padding: 8px 12px; font-size: 12.5px; border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 6px; background: #090d16; color: #fff; font-family: inherit;
+            flex-grow: 1; padding: 8px 12px; font-size: 12.5px; border: 1px solid #334155; 
+            border-radius: 6px; background: #0f172a; color: #f8fafc; font-family: inherit;
             transition: all 0.2s;
         }
-        input[type="text"]:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 8px rgba(56, 189, 248, 0.25); background: #0c121e; }
+        input[type="text"]:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 8px rgba(56, 189, 248, 0.25); background: #131d2e; }
         .btn-send { 
             padding: 8px 18px; font-size: 12px; font-weight: 800; 
             background: linear-gradient(135deg, #475569, #334155); color: white; 
@@ -501,15 +501,15 @@
         /* 차량 다중 선택 모달 */
         #vehicle-modal { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; 
+            background: rgba(15, 23, 42, 0.75); z-index: 200; justify-content: center; align-items: center; 
             backdrop-filter: blur(4px);
         }
         .modal-content { 
-            background: #0f172a; padding: 18px; border-radius: 12px; width: 92%; max-width: 450px; 
-            color: white; border: 1px solid rgba(255, 255, 255, 0.12); max-height: 85vh; overflow-y: auto; 
-            box-shadow: 0 12px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; 
+            background: #1e293b; padding: 18px; border-radius: 12px; width: 92%; max-width: 450px; 
+            color: #f8fafc; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; 
         }
-        .modal-header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; margin-bottom: 12px; }
+        .modal-header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
         .modal-title { font-size: 15px; font-weight: 800; color: #38bdf8; }
         .modal-top-btns { display: flex; gap: 6px; }
         .btn-mini-action { padding: 5px 10px; font-size: 11px; font-weight: 700; border: none; border-radius: 5px; cursor: pointer; }
@@ -522,8 +522,8 @@
         }
         .center-title { font-size: 13px; font-weight: 800; color: #fbbf24; }
         .btn-toggle-center {
-            background: rgba(30, 41, 59, 0.85); color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 4px;
+            background: #0f172a; color: #38bdf8;
+            border: 1px solid #334155; border-radius: 4px;
             font-size: 10.5px; font-weight: 700; padding: 2px 7px; cursor: pointer;
             transition: all 0.15s ease;
         }
@@ -533,7 +533,7 @@
         .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .veh-check-label { 
             display: flex; align-items: center; justify-content: center; gap: 5px;
-            background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); color: #f8fafc; 
+            background: #0f172a; border: 1px solid #334155; color: #f8fafc; 
             border-radius: 5px; padding: 6px 2px; font-size: 11px; cursor: pointer; user-select: none; 
             transition: all 0.15s;
         }
@@ -552,7 +552,7 @@
         <div class="auth-card">
             <div class="auth-icon">🚒</div>
             <div class="auth-title">제주소방서 현장대응단</div>
-            <div class="auth-sub">실시간 지휘 상황판 보안 구역입니다.<br>접속 비밀번호를 입력해 주십시오.</div>
+            <div class="auth-sub">실시간 상황판 보안 구역입니다.<br>접속 비밀번호를 입력해 주십시오.</div>
             <input type="password" id="gate-pin-input" class="auth-input" placeholder="비밀번호 4자리" inputmode="numeric" maxlength="10">
             <button type="button" id="btn-gate-auth" class="btn-auth-submit">상황판 입장</button>
             <div id="gate-error-msg" class="auth-error-msg">비밀번호가 일치하지 않습니다.</div>

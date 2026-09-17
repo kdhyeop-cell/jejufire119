@@ -481,7 +481,7 @@
         #btn-chief { background: linear-gradient(135deg, #7c3aed, #6d28d9); }         
         #btn-hq { background: linear-gradient(135deg, #db2777, #be185d); }            
         #btn-chojin { background: linear-gradient(135deg, #ea580c, #c2410c); }        
-        #btn-wanjin { background: linear-gradient(135deg, #10b981, #059669); }        
+        #btn-wanjin { background: linear-gradient(135deg, #16a34a, #15803d); }        
 
         .input-row { display: flex; gap: 8px; width: 100%; max-width: 880px; margin: 0 auto; }
         input[type="text"] { 
@@ -498,7 +498,7 @@
         }
         .btn-send:hover { background: linear-gradient(135deg, #64748b, #475569); }
 
-        /* 차량 다중 선택 모달 (수직 일렬 정렬 및 균일 높이 보완) */
+        /* 차량 다중 선택 모달 */
         #vehicle-modal { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(15, 23, 42, 0.75); z-index: 200; justify-content: center; align-items: center; 
@@ -532,7 +532,6 @@
 
         .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         
-        /* 🚒 1~3행 체크박스 위치 및 높이 완벽 수직 정렬 */
         .veh-check-label { 
             display: flex; align-items: center; justify-content: flex-start; gap: 5px;
             background: #0f172a; border: 1px solid #334155; color: #f8fafc; 
@@ -659,7 +658,7 @@
         <div id="mobile-bottom-spacer"></div>
     </div>
 
-    <!-- 하단 제어 패널 -->
+    <!-- 하단 제어 패널 (서장 도착 버튼 class="btn-quick" 정상 복구 완료) -->
     <div id="input-panel">
         <div class="panel-toggle-bar">
             <span class="panel-toggle-title">⚡ 빠른 지휘 제어 패널</span>
@@ -670,7 +669,7 @@
             <button class="btn-quick" id="btn-dispatch" disabled>출동 지령</button>
             <button class="btn-quick" id="btn-arrive-action" disabled>현장 도착</button> 
             <button class="btn-quick" id="btn-alert" disabled>대응1단계 선언</button>
-            <button class="btn-chief" id="btn-chief" disabled>서장 도착</button>
+            <button class="btn-quick" id="btn-chief" disabled>서장 도착</button>
             <button class="btn-quick" id="btn-hq" disabled>본부장 도착</button>
             <button class="btn-quick" id="btn-chojin" disabled>초진 선언</button>
             <button class="btn-quick" id="btn-wanjin" disabled>완진 (종료)</button>

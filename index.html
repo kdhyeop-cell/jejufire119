@@ -481,7 +481,7 @@
         #btn-chief { background: linear-gradient(135deg, #7c3aed, #6d28d9); }         
         #btn-hq { background: linear-gradient(135deg, #db2777, #be185d); }            
         #btn-chojin { background: linear-gradient(135deg, #ea580c, #c2410c); }        
-        #btn-wanjin { background: linear-gradient(135deg, #16a34a, #15803d); }        
+        #btn-wanjin { background: linear-gradient(135deg, #10b981, #059669); }        
 
         .input-row { display: flex; gap: 8px; width: 100%; max-width: 880px; margin: 0 auto; }
         input[type="text"] { 
@@ -498,7 +498,7 @@
         }
         .btn-send:hover { background: linear-gradient(135deg, #64748b, #475569); }
 
-        /* 차량 다중 선택 모달 */
+        /* 차량 다중 선택 모달 (수직 일렬 정렬 및 균일 높이 보완) */
         #vehicle-modal { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(15, 23, 42, 0.75); z-index: 200; justify-content: center; align-items: center; 
@@ -531,14 +531,22 @@
         .btn-toggle-center:active { filter: brightness(0.9); }
 
         .veh-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        
+        /* 🚒 1~3행 체크박스 위치 및 높이 완벽 수직 정렬 */
         .veh-check-label { 
-            display: flex; align-items: center; justify-content: center; gap: 5px;
+            display: flex; align-items: center; justify-content: flex-start; gap: 5px;
             background: #0f172a; border: 1px solid #334155; color: #f8fafc; 
-            border-radius: 5px; padding: 6px 2px; font-size: 11px; cursor: pointer; user-select: none; 
-            transition: all 0.15s;
+            border-radius: 5px; padding: 0 6px; font-size: 11px; cursor: pointer; user-select: none; 
+            transition: all 0.15s; height: 32px; box-sizing: border-box;
         }
         .veh-check-label:hover { background: #334155; border-color: rgba(56, 189, 248, 0.4); }
-        .veh-check-label input[type="checkbox"] { accent-color: #0284c7; width: 14px; height: 14px; cursor: pointer; }
+        .veh-check-label input[type="checkbox"] { 
+            accent-color: #0284c7; width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; 
+        }
+        .veh-check-label span { 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; 
+        }
+
         .modal-footer { display: flex; gap: 8px; margin-top: 12px; }
         .btn-modal-action { flex: 1; padding: 10px; border: none; font-weight: 800; border-radius: 6px; cursor: pointer; font-size: 13px; }
         #btn-submit-arrive { background: linear-gradient(135deg, #0284c7, #0369a1); color: white; }
@@ -662,7 +670,7 @@
             <button class="btn-quick" id="btn-dispatch" disabled>출동 지령</button>
             <button class="btn-quick" id="btn-arrive-action" disabled>현장 도착</button> 
             <button class="btn-quick" id="btn-alert" disabled>대응1단계 선언</button>
-            <button class="btn-quick" id="btn-chief" disabled>서장 도착</button>
+            <button class="btn-chief" id="btn-chief" disabled>서장 도착</button>
             <button class="btn-quick" id="btn-hq" disabled>본부장 도착</button>
             <button class="btn-quick" id="btn-chojin" disabled>초진 선언</button>
             <button class="btn-quick" id="btn-wanjin" disabled>완진 (종료)</button>
@@ -1300,13 +1308,13 @@
 
         document.getElementById('btn-chojin').addEventListener('click', () => {
             if (isLocked) return;
-            saveStatusState("🔥 초진 완료 / 잔불 정리중", "#d97706", false);
+            saveStatusState("🔥 초진 완료 / 잔불 정리중", "#ea580c", false);
             addLog("화세 제압 (초진 선언)", "#fbbf24");
         });
 
         document.getElementById('btn-wanjin').addEventListener('click', () => {
             if (isLocked) return;
-            saveStatusState("✅ 완진 (상황 종료)", "#15803d", false);
+            saveStatusState("✅ 완진 (상황 종료)", "#10b981", false);
             addLog("완전 진화 및 상황 종료", "#4ade80");
         });
 
